@@ -35,6 +35,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/plan", post(plan))
         .route("/api/audits/stream", post(audit_stream))
         .route("/api/explain", post(explain))
+        .route("/api/check", post(check))
         .route("/api/speak", post(speak))
         .route("/api/transcribe", post(transcribe).layer(DefaultBodyLimit::max(4_300_000)))
         .route("/api/live/turn", post(live_turn))
@@ -102,8 +103,9 @@ fn estimate(plan: &Plan) -> Value {
     let first = if p.adaptive { (kinds * p.first_wave.min(2) + p.resamples.min(2)).min(full) } else { full };
     let units = p.units.min(chars as usize / 4 + 1);
     let price = |i: f64, o: f64| (i * 15.0 + o * 60.0) / 1_000_000.0;
-    let target_call = price(chars / 3.0 + 40.0, 220.0);
-    let helpers = price(350.0, 300.0) + price(500.0 + 450.0, 120.0) * 2.0 + price(1700.0, 700.0) * 1.3 + chars * 2.0 * 3.0 / 1000.0 * 2.0 / 1000.0 * 1000.0;
+    let target_call = price(chars / 3.0 + 40.0, 150.0);
+    let translation = chars * (p.language as f64 + 1.0) / 1000.0 * 2.0;
+    let helpers = price(350.0, 300.0) + price(950.0, 120.0) * 2.0 + price(1700.0, 700.0) * 1.3 + translation;
     let (low_calls, high_calls) = (first + units + 3, full + units + 3);
     let (low, high) = (low_calls as f64 * target_call + helpers * 0.8, high_calls as f64 * target_call + helpers * 1.2);
     json!({"calls_low": low_calls + 4, "calls_high": high_calls + 6, "inr_low": (low * 100.0).round() / 100.0, "inr_high": (high * 100.0).round() / 100.0, "units": units_for(plan.effort)})
@@ -325,4 +327,23 @@ async fn demo(Path(name): Path<String>) -> Result<Json<Value>, ApiFail> {
         _ => return Err(fail(404, "No such example.")),
     };
     serde_json::from_str(raw).map(Json).map_err(|_| fail(500, "The example is damaged."))
+}
+
+#[derive(Deserialize)]
+struct CheckBody {
+    text: String,
+    lang: String,
+}
+
+/// The writing rules, as a checker anyone can paste text into. Pure code: it costs nothing to run.
+async fn check(Json(b): Json<CheckBody>) -> Result<Json<Value>, ApiFail> {
+    if b.text.chars().count() > 6000 {
+        return Err(fail(400, "Paste up to 6000 characters."));
+    }
+    let l = Lang::get(&b.lang).ok_or_else(|| fail(400, "Unknown language."))?;
+    let v = vak_core::lang::check(&b.text, l, None);
+    Ok(Json(json!({
+        "ok": v.ok(), "banned": v.banned, "long_sentences": v.long_sentences, "wrong_script": v.wrong_script,
+        "latin_heavy": v.latin_heavy, "sentences": v.sentence_count, "max_words": l.max_words,
+    })))
 }
