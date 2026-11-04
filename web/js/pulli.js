@@ -27,7 +27,7 @@ export async function pulli(box, tag) {
   function resize() {
     dpr = Math.min(2, devicePixelRatio || 1); W = box.clientWidth; H = box.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr;
-    pitch = Math.max(16, Math.round(W / 30)); cols = Math.floor(W / pitch); rows = Math.floor(H / pitch);
+    pitch = Math.max(11, Math.round(W / 46)); cols = Math.floor(W / pitch); rows = Math.floor(H / pitch);
     lit = new Float32Array(cols * rows); target = new Float32Array(cols * rows);
   }
 
@@ -44,7 +44,7 @@ export async function pulli(box, tag) {
       const k = r * cols + c; lit[k] += (target[k] - lit[k]) * 0.09;
       const x = ox + c * pitch, y = oy + r * pitch, a = lit[k];
       ctx.globalAlpha = 0.22 + a * 0.78; ctx.fillStyle = a > 0.5 ? glow : ink;
-      ctx.beginPath(); ctx.arc(x, y, 1.5 + a * (pitch * 0.2), 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 1.1 + a * (pitch * 0.24), 0, 7); ctx.fill();
     }
     // the thread: one point looping around the grid, leaving a fading trail
     const s = t / 1000, px = W / 2 + Math.sin(s * 0.9) * W * 0.38 + Math.sin(s * 2.3) * W * 0.05, py = H / 2 + Math.sin(s * 1.3 + 1) * H * 0.36 + Math.cos(s * 2.1) * H * 0.04;

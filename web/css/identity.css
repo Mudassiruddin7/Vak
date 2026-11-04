@@ -63,3 +63,58 @@ h1 em::after, h2 em::after { content: ""; position: absolute; left: 0; right: 0;
 @keyframes slide { to { background-position: -200% 0; } }
 @media (max-width: 760px) { .tr-grid { grid-template-columns: 1fr; } .tr-pane.out { border-left: 0; border-top: 1.5px solid var(--ink); } .tr-pane { min-height: 15rem; } }
 .hero2 h1 { margin-bottom: .45em; } .hero2 .lede { margin-top: 1.9rem; }
+
+/* calmer scale: the first pass was too big, especially on wide, high-density screens */
+html { font-size: 93.75%; }
+body { font-size: 1rem; line-height: 1.6; background-image: none; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; background-image: var(--dots); background-size: 28px 28px; opacity: .55; mask-image: linear-gradient(#000, transparent 70%); -webkit-mask-image: linear-gradient(#000, transparent 70%); }
+.h1, .hero2 h1 { font-size: clamp(2.4rem, 5.2vw, 4.3rem); line-height: 1.06; letter-spacing: -.03em; }
+:lang(te) .hero2 h1, :lang(hi) .hero2 h1 { font-size: clamp(2.2rem, 4.6vw, 3.7rem); line-height: 1.28; }
+.h2 { font-size: clamp(1.8rem, 3.6vw, 2.7rem); } .h3 { font-size: clamp(1.3rem, 2.2vw, 1.7rem); }
+.lede { font-size: clamp(1rem, 1.3vw, 1.15rem); } .hero2 .lede { max-width: 29rem; }
+.say { font-size: 1.1rem; line-height: 1.7; } .verdict { font-size: clamp(1.6rem, 3vw, 2.2rem); }
+textarea.input, .tr-text { font-size: 1.15rem; line-height: 1.6; }
+.gauge .num { font-size: clamp(2.6rem, 6vw, 3.6rem); }
+.bench-head h2 { font-size: clamp(1.4rem, 2.4vw, 1.9rem); }
+.faq summary { font-size: 1.2rem; } .step h3 { font-size: 1.4rem; } .step b { font-size: 2rem; }
+.foot .big { font-size: clamp(4rem, 15vw, 11rem); -webkit-text-stroke: 1.5px var(--glow); }
+.tr-grid, .bench, .field { border-width: 1px; } .bench { box-shadow: 6px 6px 0 var(--glow); } .field { box-shadow: 6px 6px 0 var(--glow); }
+.card, .test, .run-card { border-width: 1px; } .tr-head, .tr-foot { border-color: var(--line-soft); }
+.nav { width: min(100% - 2rem, 62rem); } .btn { font-size: .95rem; min-height: 2.75rem; padding: .65rem 1.2rem; }
+
+/* one token for "text that sits on the accent colour", so dark mode can't drift */
+:root { --on-accent: #fff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --on-accent: #0A0F25; } }
+:root[data-theme="dark"] { --on-accent: #0A0F25; }
+.btn, :root[data-theme="dark"] .btn { color: var(--on-accent); }
+.btn.go, :root[data-theme="dark"] .btn.go { color: #141A3F; }
+.btn.line, :root[data-theme="dark"] .btn.line, :root:not([data-theme="light"]) .btn.line { color: var(--ink); }
+.btn.dark, :root[data-theme="dark"] .btn.dark { background: var(--ink); color: var(--bg); }
+.seg > .on, :root[data-theme="dark"] .seg > .on, .chip.on, .mic, .announce, :root[data-theme="dark"] .announce { color: var(--on-accent); }
+.sheet.ink, .sheet.teal, :root[data-theme="dark"] .sheet.ink, :root[data-theme="dark"] .sheet.teal { color: var(--on-accent); }
+.foot, :root[data-theme="dark"] .foot { color: #E8ECFF; }
+.chip.ok, :root[data-theme="dark"] .chip.ok { color: var(--ink); }
+
+/* review pass: lighter lines, one border per surface, readable secondary text, steadier Indic leading */
+:root { --line-soft: rgb(20 26 63 / .11); --r-md: .65rem; --r-lg: .85rem; }
+:root[data-theme="dark"], :root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink-2: #B9C2E8; --ink-3: #98A3D2; --line-soft: rgb(232 236 255 / .13); --card: #121936; --lumen-dark: #1A2247; } }
+:root[data-theme="dark"] { --ink-2: #B9C2E8; --ink-3: #98A3D2; --line-soft: rgb(232 236 255 / .13); --card: #121936; --lumen-dark: #1A2247; }
+.bench, .field, .tr-grid { border: 1px solid var(--line-soft); box-shadow: 0 1px 0 var(--line-soft), 0 12px 32px -18px rgb(20 26 63 / .35); }
+.field { box-shadow: 5px 5px 0 var(--glow); border-color: var(--line); }
+.card, .run-card, .test { border: 1px solid var(--line-soft); background: var(--card); }
+.test { border-radius: var(--r-md); } .tests { gap: .35rem; }
+.tr-pane.out { border-left: 1px solid var(--line-soft); }
+.tr-head, .tr-foot { border-color: var(--line-soft); }
+.tr-text, .tr-text:focus { border: 0; outline: 0; box-shadow: none; background: transparent; }
+.tr-pane:focus-within { box-shadow: inset 0 0 0 2px var(--fathom-2); }
+.input:focus, select.input:focus { outline: 2px solid var(--fathom-2); outline-offset: 2px; border-color: var(--fathom-2); }
+.input, select.input { border: 1px solid var(--line); }
+.faq details { border-top: 1px solid var(--line-soft); } .faq details:last-child { border-bottom: 1px solid var(--line-soft); }
+.meter { background: var(--lumen-dark); height: .5rem; }
+.btn { min-height: 2.75rem; } .icon-btn { width: 2.6rem; height: 2.6rem; border: 1px solid var(--line); }
+.hero2 h1 { margin-bottom: .6em; } .hero2 .lede { margin-top: 1.6rem; max-width: 33rem; }
+:lang(te) body, :lang(hi) body, :lang(ta) body, :lang(kn) body, :lang(ml) body, :lang(bn) body { line-height: 1.75; }
+:lang(te) .hero2 h1, :lang(hi) .hero2 h1 { margin-bottom: .75em; }
+.tr-text { font-size: 1.2rem; line-height: 1.7; } .tr-text:lang(te), .tr-text:lang(hi) { font-size: 1.3rem; }
+.hint, .tr-foot .hint, .tab-note { color: var(--ink-3); font-size: .875rem; }
