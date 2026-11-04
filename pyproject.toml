@@ -27,9 +27,12 @@ vak = "vak.__main__:main"
 include = ["vak*"]
 
 [tool.setuptools.package-data]
-vak = ["web/**/*", "explain/prompts/*.txt"]
+vak = ["web/**/*", "explain/templates/*.txt"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-filterwarnings = ["ignore::DeprecationWarning"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore:Using `httpx` with `starlette.testclient`",
+]
