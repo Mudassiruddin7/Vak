@@ -26,3 +26,5 @@ shots/
 
 # rust
 target/
+.vercel
+.env*

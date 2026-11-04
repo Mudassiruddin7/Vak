@@ -6,6 +6,8 @@ interprets live between languages with a trust score on every sentence.
 *Vak* (వాక్కు, वाक्) is the Sanskrit word for speech. Written in Rust, built on Sarvam's speech,
 translation and language APIs.
 
+**Live: https://vak-eight.vercel.app**
+
 ![Home](docs/screenshots/home-en.png)
 
 ## Three things in one
