@@ -27,8 +27,10 @@ Vak then does the following:
 
 | | |
 | --- | --- |
-| ![Ask](docs/screenshots/ask.png) | ![Mid-run](docs/screenshots/run.png) |
-| ![The evidence](docs/screenshots/result-evidence.png) | ![On a phone](docs/screenshots/phone.png) |
+| ![Ask](docs/screenshots/ask.png) | ![The plan, before anything is spent](docs/screenshots/plan.png) |
+| ![Mid-run, every variation as a card](docs/screenshots/run.png) | ![The evidence behind the score](docs/screenshots/result-evidence.png) |
+
+<img src="docs/screenshots/phone.png" alt="The ask screen on a phone, in Telugu" width="260">
 
 ## Running it
 
