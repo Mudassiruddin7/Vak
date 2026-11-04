@@ -1,0 +1,25 @@
+# secrets and local state
+.env
+.env.*
+!.env.example
+data/
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# editor and tooling folders
+.idea/
+.vscode/
+.DS_Store
+
+# the original brief stays on my machine
+Prompt.txt
+
+# scratch output from screenshots and probes
+shots/
