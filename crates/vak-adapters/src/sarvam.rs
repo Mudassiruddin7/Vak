@@ -295,6 +295,16 @@ impl Translator for Sarvam {
     }
 }
 
+impl Sarvam {
+    /// English letters typed phonetically ("ela unnaru") to the language's own script.
+    pub async fn unromanize(&self, text: &str, dst: &str) -> Result<String, ApiError> {
+        let body = json!({"input": text.trim(), "source_language_code": "en-IN", "target_language_code": bcp47(dst)});
+        let data = self.post_json("/transliterate", &body).await?;
+        let t = data.get("transliterated_text").and_then(|t| t.as_str()).unwrap_or("").trim().to_string();
+        if t.is_empty() { Err(ApiError::Other("The transliterator sent back nothing.".into())) } else { Ok(t) }
+    }
+}
+
 const KEYTERMS: [&str; 6] = ["Sarvam", "Gemma", "DeepSeek", "prompt", "model", "Vak"];
 
 #[async_trait]

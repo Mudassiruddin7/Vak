@@ -30,8 +30,14 @@ with sync_playwright() as p:
     page.locator(".langpick [data-lang=hi]").click()
     expect(page.get_by_text("मॉडल की जाँच")).to_be_visible()
 
-    # Setu: both people's controls are there and nothing is spoken without consent in a sensitive setting
     page.locator(".langpick [data-lang=en]").click()
+
+    # Translate: the tab opens with two panes and a language picker
+    page.get_by_role("link", name="Translate", exact=True).first.click()
+    expect(page.locator("#in")).to_be_visible()
+    expect(page.locator("[data-all=dst]")).to_be_visible()
+
+    # Setu: both people's controls are there and nothing is spoken without consent in a sensitive setting
     page.get_by_role("link", name="Setu", exact=True).first.click()
     expect(page.locator("[data-mic]")).to_have_count(2)
     page.select_option("#dm", "public_service")

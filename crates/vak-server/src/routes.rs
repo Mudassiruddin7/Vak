@@ -19,7 +19,7 @@ use vak_app::explain::Explainer;
 use vak_app::live::{Interpreter, Mode, TurnRequest, DOMAINS};
 use vak_app::orchestrator::{Orchestrator, Overrides};
 use vak_app::plan::{AuditRequest, Plan, TargetSpec};
-use vak_app::ports::{emit, ApiError, Emit, Stt, Tts};
+use vak_app::ports::{emit, ApiError, Emit, Stt, Translator, TranslateOpts, Tts};
 use vak_app::target::{practice_target, SarvamTarget, Target};
 use vak_core::audit::{difficulty, AuditType, Effort, Report};
 use vak_core::lang::{text_for, Lang, Tier};
@@ -35,6 +35,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/plan", post(plan))
         .route("/api/audits/stream", post(audit_stream))
         .route("/api/explain", post(explain))
+        .route("/api/translate", post(translate))
         .route("/api/check", post(check))
         .route("/api/speak", post(speak))
         .route("/api/transcribe", post(transcribe).layer(DefaultBodyLimit::max(4_300_000)))
@@ -346,4 +347,56 @@ async fn check(Json(b): Json<CheckBody>) -> Result<Json<Value>, ApiFail> {
         "ok": v.ok(), "banned": v.banned, "long_sentences": v.long_sentences, "wrong_script": v.wrong_script,
         "latin_heavy": v.latin_heavy, "sentences": v.sentence_count, "max_words": l.max_words,
     })))
+}
+
+#[derive(Deserialize)]
+struct TranslateBody {
+    text: String,
+    #[serde(default)]
+    src: String,
+    dst: String,
+    #[serde(default)]
+    gender: Option<String>,
+    /// Typed in English letters (like on a phone) in the source language: convert to its script first.
+    #[serde(default)]
+    romanized: bool,
+    #[serde(default)]
+    native_numerals: bool,
+    /// Also return a second wording in the other register.
+    #[serde(default)]
+    alternatives: bool,
+}
+
+/// Text translation between any two of the 23 languages, with auto-detect, phone-style romanised input and
+/// two registers, the way a dedicated translator works.
+async fn translate(State(s): S, who: Principal, Json(b): Json<TranslateBody>) -> Result<Json<Value>, ApiFail> {
+    let text = b.text.trim();
+    let n = text.chars().count();
+    if n == 0 || n > 2000 {
+        return Err(fail(400, "Type or paste between 1 and 2000 characters."));
+    }
+    let dst = Lang::get(&b.dst).ok_or_else(|| fail(400, "Unknown target language."))?;
+    let mut src = if b.src.is_empty() || b.src == "auto" { vak_core::lang::detect(text) } else { Lang::get(&b.src) };
+    let mut input = text.to_string();
+    let client = s.sarvam_for(&who);
+    spend_or_429(&s, &who, 0.12 + n as f64 / 8000.0 + if b.alternatives { 0.1 } else { 0.0 })?;
+    if b.romanized {
+        let from = src.filter(|l| l.script != vak_core::text::Script::Latin).or_else(|| Lang::get("hi")).expect("hindi exists");
+        // English letters to the language's own script, then translate that
+        input = client.unromanize(&input, &from.code).await.map_err(api_err)?;
+        src = Some(from);
+    }
+    let src = src.ok_or_else(|| fail(400, "I couldn't tell which language that is. Pick it from the list."))?;
+    if src == dst {
+        return Ok(Json(json!({"translation": input, "detected": src.code, "same": true, "input": input})));
+    }
+    let gender = b.gender.filter(|g| matches!(g.as_str(), "Male" | "Female"));
+    let run = |mode: &'static str| {
+        let opts = TranslateOpts { mode: Some(mode.into()), speaker_gender: gender.clone(), native_numerals: b.native_numerals };
+        let (c, i, sc, dc) = (client.clone(), input.clone(), src.code.clone(), dst.code.clone());
+        async move { c.translate(&i, &sc, &dc, &opts).await }
+    };
+    let (main, alt) = if b.alternatives { let (a, b2) = tokio::join!(run("formal"), run("modern-colloquial")); (a.map_err(api_err)?, b2.ok()) } else { (run("formal").await.map_err(api_err)?, None) };
+    let alt = alt.filter(|a| vak_core::text::norm(a) != vak_core::text::norm(&main));
+    Ok(Json(json!({"translation": main, "alternative": alt, "detected": src.code, "input": input, "can_speak": dst.tier == Tier::Full})))
 }

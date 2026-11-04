@@ -10,9 +10,10 @@ import { home } from "./views/home.js";
 import { setu } from "./views/setu.js";
 import { learn } from "./views/learn.js";
 import { rules } from "./views/rules.js";
+import { translate } from "./views/translate.js";
 
 export const app = { config: null, route: "audit", cleanup: null };
-const ROUTES = { "": ["audit", home], "/": ["audit", home], "/setu": ["setu", setu], "/learn": ["learn", learn], "/rules": ["rules", rules] };
+const ROUTES = { "": ["audit", home], "/": ["audit", home], "/setu": ["setu", setu], "/translate": ["translate", translate], "/learn": ["learn", learn], "/rules": ["rules", rules] };
 
 function applyTheme() {
   const th = S.get().theme;
@@ -24,9 +25,10 @@ function renderChrome() {
   mount($("#announce"), html`${t("announce.text")} <a href="#/setu">${t("announce.cta")} →</a>`);
   const s = S.get();
   mount($("#nav"), html`
-    <a class="logo" href="#/" aria-label="Vak"><span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>Vak</a>
+    <a class="logo" href="#/" aria-label="Vak"><img src="/img/favicon.svg" alt="" width="30" height="30">Vak</a>
     <nav class="seg" aria-label="Sections">
       <a href="#/" class="${app.route === "audit" ? "on" : ""}">${t("nav.audit")}</a>
+      <a href="#/translate" class="${app.route === "translate" ? "on" : ""}">${t("nav.translate")}</a>
       <a href="#/setu" class="${app.route === "setu" ? "on" : ""}">${t("nav.setu")}</a>
       <a href="#/learn" class="${app.route === "learn" ? "on" : ""}">${t("nav.learn")}</a>
     </nav>

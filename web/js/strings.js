@@ -3,9 +3,10 @@
 import { extend } from "./i18n.js";
 
 const en = {
+  "tr.ph": "Type, paste or speak…", "tr.out": "Translation", "tr.detect": "Detect language", "tr.detected": "Detected", "tr.roman": "Typed in English letters", "tr.swap": "Swap languages", "tr.listen": "Listen", "tr.copy": "Copy", "tr.copied": "Copied", "tr.formal": "Formal", "tr.casual": "Everyday", "tr.also": "Another way to say it", "tr.back": "Check by translating back", "tr.numerals": "Native numerals", "tr.gender": "I am", "tr.mic": "Speak", "tr.mixed": "Looks mixed: names and English words are kept as they are.", "tr.empty": "The translation appears here as you type.", "tr.same": "Both sides are the same language.",
   "announce.text": "Setu is here: live interpreting between Indian languages, with a trust score on every sentence.",
   "announce.cta": "Try it",
-  "nav.audit": "Audit", "nav.setu": "Setu", "nav.learn": "Learn", "nav.rules": "Rules", "nav.settings": "Settings", "nav.signin": "Sign in", "nav.signout": "Sign out", "nav.cta": "Open Setu",
+  "nav.translate": "Translate", "nav.audit": "Audit", "nav.setu": "Setu", "nav.learn": "Learn", "nav.rules": "Rules", "nav.settings": "Settings", "nav.signin": "Sign in", "nav.signout": "Sign out", "nav.cta": "Open Setu",
   "h.eyebrow": "Vak · speak it, test it",
   "h.a": "Don’t trust it,", "h.b": "just ask again.",
   "h.lede": "Say a question in Telugu, Hindi or nine more languages. Vak changes it a little, asks your model again and again, and tells you in plain words how far to trust it.",
@@ -41,8 +42,9 @@ const en = {
   "au.email": "Email", "au.pass": "Password", "au.up": "Create account", "au.in": "Sign in", "au.note": "Signing in lets you save audits and keep your streak.", "au.confirm": "Check your email to confirm, then sign in.", "au.hi": "Signed in as",
 };
 const hi = {
+  "tr.ph": "लिखिए, चिपकाइए या बोलिए…", "tr.out": "अनुवाद", "tr.detect": "भाषा पहचानिए", "tr.detected": "पहचानी गई", "tr.roman": "अंग्रेज़ी अक्षरों में लिखा", "tr.swap": "भाषाएँ बदलिए", "tr.listen": "सुनिए", "tr.copy": "कॉपी", "tr.copied": "कॉपी हुआ", "tr.formal": "औपचारिक", "tr.casual": "बोलचाल", "tr.also": "ऐसे भी कह सकते हैं", "tr.back": "वापस अनुवाद करके जाँचिए", "tr.numerals": "देशी अंक", "tr.gender": "मैं हूँ", "tr.mic": "बोलिए", "tr.empty": "लिखते ही अनुवाद यहाँ दिखेगा।", "tr.same": "दोनों तरफ़ एक ही भाषा है।",
   "announce.text": "सेतु आ गया: भारतीय भाषाओं के बीच लाइव दुभाषिया, हर वाक्य पर भरोसे का स्कोर।", "announce.cta": "आज़माइए",
-  "nav.audit": "जाँच", "nav.setu": "सेतु", "nav.learn": "सीखें", "nav.rules": "नियम", "nav.settings": "सेटिंग्स", "nav.signin": "साइन इन", "nav.signout": "साइन आउट", "nav.cta": "सेतु खोलें",
+  "nav.translate": "अनुवाद", "nav.audit": "जाँच", "nav.setu": "सेतु", "nav.learn": "सीखें", "nav.rules": "नियम", "nav.settings": "सेटिंग्स", "nav.signin": "साइन इन", "nav.signout": "साइन आउट", "nav.cta": "सेतु खोलें",
   "h.eyebrow": "वाक् · बोलिए, परखिए", "h.a": "भरोसा मत कीजिए,", "h.b": "फिर से पूछिए।",
   "h.lede": "तेलुगु, हिन्दी या नौ और भाषाओं में सवाल बोलिए। वाक् उसे थोड़ा बदलकर आपके मॉडल से बार-बार पूछता है, और सीधी भाषा में बताता है कि कितना भरोसा करें।",
   "h.cta1": "मॉडल जाँचिए", "h.cta2": "सेतु खोलें", "h.note": "आज़माना मुफ़्त है। अपनी सरवम कुंजी लाइए, या हमारी कुंजी रोज़ की सीमा तक इस्तेमाल कीजिए।",
@@ -76,8 +78,9 @@ const hi = {
   "au.email": "ईमेल", "au.pass": "पासवर्ड", "au.up": "खाता बनाइए", "au.in": "साइन इन", "au.note": "साइन इन करने पर आप जाँचें सहेज सकते हैं और अपनी लगातार गिनती बचा सकते हैं।", "au.confirm": "पुष्टि के लिए अपना ईमेल देखिए, फिर साइन इन कीजिए।", "au.hi": "साइन इन:",
 };
 const te = {
+  "tr.ph": "రాయండి, పేస్ట్ చేయండి లేదా చెప్పండి…", "tr.out": "అనువాదం", "tr.detect": "భాషను గుర్తించు", "tr.detected": "గుర్తించినది", "tr.roman": "ఇంగ్లీష్ అక్షరాల్లో రాసినది", "tr.swap": "భాషలు మార్చండి", "tr.listen": "వినండి", "tr.copy": "కాపీ", "tr.copied": "కాపీ అయింది", "tr.formal": "లాంఛనం", "tr.casual": "మాటల్లో", "tr.also": "ఇలా కూడా చెప్పవచ్చు", "tr.back": "తిరిగి అనువదించి చూడండి", "tr.numerals": "స్థానిక అంకెలు", "tr.gender": "నేను", "tr.mic": "చెప్పండి", "tr.empty": "మీరు రాస్తుండగానే అనువాదం ఇక్కడ కనిపిస్తుంది.", "tr.same": "రెండు వైపులా ఒకే భాష ఉంది.",
   "announce.text": "సేతు వచ్చేసింది: భారతీయ భాషల మధ్య లైవ్ అనువాదం, ప్రతి వాక్యానికి నమ్మకం స్కోర్.", "announce.cta": "ప్రయత్నించండి",
-  "nav.audit": "పరీక్ష", "nav.setu": "సేతు", "nav.learn": "నేర్చుకోండి", "nav.rules": "నియమాలు", "nav.settings": "సెట్టింగ్స్", "nav.signin": "సైన్ ఇన్", "nav.signout": "సైన్ అవుట్", "nav.cta": "సేతు తెరవండి",
+  "nav.translate": "అనువాదం", "nav.audit": "పరీక్ష", "nav.setu": "సేతు", "nav.learn": "నేర్చుకోండి", "nav.rules": "నియమాలు", "nav.settings": "సెట్టింగ్స్", "nav.signin": "సైన్ ఇన్", "nav.signout": "సైన్ అవుట్", "nav.cta": "సేతు తెరవండి",
   "h.eyebrow": "వాక్కు · చెప్పండి, పరీక్షించండి", "h.a": "గుడ్డిగా నమ్మకండి,", "h.b": "మళ్లీ అడగండి.",
   "h.lede": "తెలుగు, హిందీ లేదా మరో తొమ్మిది భాషల్లో ప్రశ్న చెప్పండి. వాక్కు దాన్ని కొంచెం మార్చి మీ మోడల్‌ను మళ్లీ మళ్లీ అడుగుతుంది, ఎంత నమ్మవచ్చో సులభమైన మాటల్లో చెబుతుంది.",
   "h.cta1": "మోడల్‌ను పరీక్షించండి", "h.cta2": "సేతు తెరవండి", "h.note": "ప్రయత్నించడం ఉచితం. మీ సర్వం కీ తెచ్చుకోండి, లేదా మా కీని రోజువారీ పరిమితిలో వాడండి.",

@@ -10,24 +10,28 @@ translation and language APIs.
 
 ![Home](docs/screenshots/home-en.png)
 
-## Three things in one
+## Four things in one
 
 **Audit.** Say or type a question. Vak changes it in small ways (a spelling slip, rewording, digits in
 another script, English letters, another language, a side remark, a flipped meaning), asks your model each
 time, and tells you in plain Telugu, Hindi or any of nine more languages how far to trust it. You can
 listen to the explanation, and see which words the answer leaned on.
 
-| Telugu/Hindi explanation, in English UI | The same result, in Hindi |
+| An audit result | The home page in Hindi |
 | --- | --- |
-| ![Result](docs/screenshots/result-en.png) | ![Result in Hindi](docs/screenshots/result-hi.png) |
+| ![Result](docs/screenshots/result-en.png) | ![Home in Hindi](docs/screenshots/home-hi.png) |
+
+**Translate.** A text translator for 23 languages with auto-detect, live translation after you pause, a
+formal and an everyday wording, typing in English letters ("meeru ela unnaru"), native or international
+digits, speaker gender, voice in and out, and a check-by-translating-back button.
+
+![Translate](docs/screenshots/translate-en.png)
 
 **Setu.** A live interpreter for two people who share no language. Each person speaks; the other hears the
 translation. Every sentence is checked before it is voiced: numbers, names and acronyms must survive, the
 output must be in the right script, and in careful mode the translation is translated back and compared with
 what was said. Low trust asks the speaker to confirm first. Sensitive settings (police and public service,
 clinic, bank, legal aid) show and read a consent notice in both languages before anything starts.
-
-![Setu](docs/screenshots/setu-en.png)
 
 **Learn and Rules.** Short lessons built from recorded audits (guess whether the answer moved, then see),
 with XP and a daily streak. A rules page lists what makes text read right in each of eleven languages, a
@@ -97,6 +101,6 @@ uv run tests/e2e/journey.py http://127.0.0.1:8420
 
 ## Fonts
 
-EB Garamond, Figtree and the Noto families, all under the SIL Open Font License (`web/fonts/OFL.txt`).
-The visual direction borrows from the calm, serif-led look of voice-first product sites; all artwork and
-wording here is original.
+Instrument Sans and the Noto families, all under the SIL Open Font License (`web/fonts/OFL.txt`).
+The look is called Pulli: a kolam dot grid in indigo and turmeric, where the hero's dots light up into the
+word "speech" in a different script every few seconds. Everything is original.
