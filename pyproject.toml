@@ -19,6 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+e2e = ["playwright>=1.40"]
 
 [project.scripts]
 vak = "vak.__main__:main"
