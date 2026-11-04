@@ -23,3 +23,6 @@ Prompt.txt
 
 # scratch output from screenshots and probes
 shots/
+
+# rust
+target/

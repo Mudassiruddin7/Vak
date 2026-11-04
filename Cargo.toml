@@ -1,0 +1,19 @@
+[workspace]
+resolver = "3"
+members = ["crates/vak-core", "crates/vak-app", "crates/vak-adapters", "crates/vak-server"]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+opt-level = 3
+strip = true
+panic = "abort"
+
+[profile.dev.package."*"]
+opt-level = 1
