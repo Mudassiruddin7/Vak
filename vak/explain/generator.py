@@ -12,7 +12,7 @@ from ..sarvam import AuthError, ChatClient, OutOfCredits, SarvamError
 from . import fallback, prompts, rules
 
 MAX_ATTEMPTS = 3
-MAX_SENTENCES_KEPT = 14
+MAX_SENTENCES_KEPT = rules.MAX_SENTENCES
 
 
 @dataclass
@@ -43,6 +43,7 @@ class Explainer:
             {"role": "system", "content": prompts.build_system(report, language, seed)},
             {"role": "user", "content": prompts.build_user(language)},
         ]
+        facts = rules.Facts.from_report(report)
         best: tuple[str, rules.Violations] | None = None
         notes: list[str] = []
         attempts = 0
@@ -55,7 +56,7 @@ class Explainer:
                 notes.append(f"The language model was unavailable ({exc.message[:80]}).")
                 break
             text = rules.clean(reply.text)
-            found = rules.check(text, language)
+            found = rules.check(text, language, facts)
             if best is None or found.severity < best[1].severity:
                 best = (text, found)
             if found.ok:
@@ -66,11 +67,11 @@ class Explainer:
             text, found = best
             if found.long_sentences:
                 text = rules.split_long(text, language)
-                found = rules.check(text, language)
+                found = rules.check(text, language, facts)
             if found.too_long:
                 text = " ".join(rules.split_sentences(text)[:MAX_SENTENCES_KEPT])
-                found = rules.check(text, language)
-            if not (found.banned or found.wrong_script or found.latin_heavy or found.too_short):
+                found = rules.check(text, language, facts)
+            if not (found.banned or found.wrong_script or found.latin_heavy or found.too_short or found.invented_numbers):
                 if found.long_sentences:
                     notes.append("A few sentences are a little longer than 15 words.")
                 return _from_text(language, text, "model", attempts, self.model, notes)

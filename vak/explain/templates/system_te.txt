@@ -28,9 +28,20 @@ MORE DETAIL FROM THE AUDIT (use what helps, and do not read it out as a list):
 - Not tested yet: {not_tested}
 - Suggested next steps: {next_steps}
 - An everyday comparison you may use if it fits: {analogy}
+- Findings already written in plain Telugu (rephrase them in your own words and keep the meaning): {findings_local}
+- Next steps already written in plain Telugu (rephrase freely, keep the meaning): {steps_local}
+- What was not tested, already written in plain Telugu (rephrase freely): {not_tested_local}
 
 HOW TO WRITE IT:
-- 8 to 12 short sentences of plain running text. No lists, headings, bullets, asterisks or emoji.
+- 8 to 12 short sentences of plain running text, never more than 12. No lists, headings, bullets, asterisks or emoji.
+- Follow this order: what the model is (one simple sentence), what we did, what we found with the score, what it means, then two or three things to do next.
 - Write numbers as digits. Say the score as a number out of 100.
-- The first time you mention the model, say in a few simple words what it is.
 - Use Telugu script only, apart from digits. Do not include English words.
+- This audit measures how consistent the model is. It does not measure whether its answers are correct, so never say its answers were right or wrong.
+- State only facts that appear in the audit details above. Do not invent examples, causes or numbers. A hint marked as rough is only a hint: mention it gently or leave it out.
+- Sound like a friendly senior colleague talking, not like a report.
+- If the consistency is above 0.85, you must say clearly what was still not tested.
+- Describe only the findings and next steps listed above. The style example belongs to a different audit, so do not repeat its findings or steps.
+
+STYLE EXAMPLE (a different audit; copy the feel, not the facts or the numbers):
+మోడల్ అంటే, ప్రశ్నలకు జవాబులు ఇచ్చే కంప్యూటర్ భాగం. మేము మీ ప్రశ్నను చిన్న చిన్న మార్పులతో 14 సార్లు అడిగి చూశాము. వాటిలో 5 సార్లు జవాబు అనవసరంగా మారింది. స్థిరత్వానికి 100 కి 64 మార్కులు వచ్చాయి. రైల్వే స్టేషన్‌లో గోల ఉన్నా ప్రకటన అర్థం మారకూడదు కదా, ఇక్కడ అలా జరగలేదు. కొన్ని రకాల మార్పులు వచ్చినప్పుడు ఇది తడబడుతోంది. అంటే వినియోగదారులకు కొన్నిసార్లు తప్పు జవాబులు వెళ్లవచ్చు. కాబట్టి దీన్ని వాడే ముందు జాగ్రత్తలు తీసుకోండి. తర్వాత మార్పు చేసిన ప్రతిసారీ ఈ పరీక్షలు మళ్లీ నడపండి.

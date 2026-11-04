@@ -10,11 +10,13 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 
-from ..audit.text_utils import script_counts, script_share
+from ..audit.models import Report
+from ..audit.text_utils import numbers_in, script_counts, script_share
 
 MAX_WORDS = 15
 MIN_SENTENCES = 4
-MAX_SENTENCES = 18
+MAX_SENTENCES = 14
+SMALL_NUMBERS = frozenset(str(n) for n in range(0, 11))   # "3 steps", "2 times" are fine
 
 # English terms, then how they get spelt out in Telugu and Devanagari. Substring match, so plurals are covered.
 BANNED = [
@@ -52,6 +54,23 @@ def word_count(sentence: str) -> int:
     return sum(1 for w in sentence.split() if any(ch.isalnum() or unicodedata.category(ch) in ("Mn", "Mc") for ch in w))
 
 
+@dataclass(frozen=True)
+class Facts:
+    """What the explanation is allowed to say numerically. Anything else counts as made up."""
+    score_100: int
+    allowed: frozenset[str]
+
+    @classmethod
+    def from_report(cls, report: Report) -> "Facts":
+        score = report.consistency_score
+        nums = {str(round(score * 100)), f"{score:.2f}", str(score), "100",
+                str(report.total_perturbations), str(report.unexpected_changes), str(report.skipped)}
+        nums |= numbers_in(report.target_label) | numbers_in(report.prompt) | numbers_in(report.baseline_output)
+        text = " ".join([*report.not_tested, *report.next_steps, *report.strengths, *(f.detail for f in report.flags)])
+        nums |= numbers_in(text)
+        return cls(round(score * 100), frozenset(nums) | SMALL_NUMBERS)
+
+
 @dataclass
 class Violations:
     banned: list[str] = field(default_factory=list)
@@ -61,16 +80,20 @@ class Violations:
     sentence_count: int = 0
     too_short: bool = False
     too_long: bool = False
+    invented_numbers: list[str] = field(default_factory=list)
+    missing_score: bool = False
 
     @property
     def ok(self) -> bool:
-        return not (self.banned or self.long_sentences or self.wrong_script or self.latin_heavy or self.too_short or self.too_long)
+        return not (self.banned or self.long_sentences or self.wrong_script or self.latin_heavy or self.too_short
+                    or self.too_long or self.invented_numbers or self.missing_score)
 
     @property
     def severity(self) -> tuple:
         """Lower is better; used to pick the best of several attempts."""
-        return (bool(self.banned) + self.wrong_script + self.too_short + self.too_long,
-                len(self.banned), self.latin_heavy, len(self.long_sentences))
+        return (bool(self.banned) + self.wrong_script + self.too_short + bool(self.invented_numbers),
+                len(self.banned) + len(self.invented_numbers), self.latin_heavy + self.too_long + self.missing_score,
+                len(self.long_sentences))
 
     def feedback(self) -> str:
         lines = []
@@ -85,10 +108,15 @@ class Violations:
             lines.append("The explanation is too short. Write 8 to 12 sentences covering what was found, what it means and what to do next.")
         if self.too_long:
             lines.append("The explanation is too long. Keep it to 12 sentences.")
+        if self.invented_numbers:
+            lines.append("You used numbers that are not in the audit: " + ", ".join(self.invented_numbers)
+                         + ". Use only the numbers you were given.")
+        if self.missing_score:
+            lines.append("Say the consistency score as a number out of 100, written in digits.")
         return "\n".join(lines)
 
 
-def check(text: str, lang: str) -> Violations:
+def check(text: str, lang: str, facts: Facts | None = None) -> Violations:
     plain = _plain(text)
     sentences = split_sentences(text)
     v = Violations(sentence_count=len(sentences))
@@ -100,6 +128,10 @@ def check(text: str, lang: str) -> Violations:
     v.latin_heavy = total > 0 and counts["en"] / total > 0.08
     v.too_short = len(sentences) < MIN_SENTENCES
     v.too_long = len(sentences) > MAX_SENTENCES
+    if facts is not None:
+        used = numbers_in(text)
+        v.invented_numbers = sorted(n for n in used if n not in facts.allowed)
+        v.missing_score = str(facts.score_100) not in used
     return v
 
 

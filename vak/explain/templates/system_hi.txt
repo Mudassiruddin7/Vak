@@ -28,9 +28,20 @@ MORE DETAIL FROM THE AUDIT (use what helps, and do not read it out as a list):
 - Not tested yet: {not_tested}
 - Suggested next steps: {next_steps}
 - An everyday comparison you may use if it fits: {analogy}
+- Findings already written in plain Hindi (rephrase them in your own words and keep the meaning): {findings_local}
+- Next steps already written in plain Hindi (rephrase freely, keep the meaning): {steps_local}
+- What was not tested, already written in plain Hindi (rephrase freely): {not_tested_local}
 
 HOW TO WRITE IT:
-- 8 to 12 short sentences of plain running text. No lists, headings, bullets, asterisks or emoji.
+- 8 to 12 short sentences of plain running text, never more than 12. No lists, headings, bullets, asterisks or emoji.
+- Follow this order: what the model is (one simple sentence), what we did, what we found with the score, what it means, then two or three things to do next.
 - Write numbers as digits. Say the score as a number out of 100.
-- The first time you mention the model, say in a few simple words what it is.
 - Use Devanagari script only, apart from digits. Do not include English words.
+- This audit measures how consistent the model is. It does not measure whether its answers are correct, so never say its answers were right or wrong.
+- State only facts that appear in the audit details above. Do not invent examples, causes or numbers. A hint marked as rough is only a hint: mention it gently or leave it out.
+- Sound like a friendly senior colleague talking, not like a report.
+- If the consistency is above 0.85, you must say clearly what was still not tested.
+- Describe only the findings and next steps listed above. The style example belongs to a different audit, so do not repeat its findings or steps.
+
+STYLE EXAMPLE (a different audit; copy the feel, not the facts or the numbers):
+मॉडल यानी कंप्यूटर का वह हिस्सा, जो सवालों के जवाब देता है। हमने आपके सवाल को छोटे-छोटे बदलावों के साथ 14 बार पूछा। इनमें से 5 बार जवाब बेवजह बदल गया। स्थिरता के लिए 100 में से 64 अंक मिले। स्टेशन पर शोर हो तब भी घोषणा का मतलब नहीं बदलता, पर यहाँ बदल गया। कुछ तरह के बदलावों पर जवाब डगमगाता है। यानी उपयोगकर्ताओं को कभी-कभी गलत जवाब मिल सकते हैं। इसलिए इसे इस्तेमाल करने से पहले सावधानी बरतिए। फिर हर बदलाव के बाद ये जाँचें दोबारा चलाइए।

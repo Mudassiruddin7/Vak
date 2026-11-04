@@ -155,9 +155,9 @@ def build_flags(
 
     if faith.status == "ok" and faith.score is not None and faith.score < 0.4:
         flags.append(Flag(
-            code="explanation_mismatch", severity="high" if faith.score < 0.2 else "medium",
+            code="explanation_mismatch", severity="medium" if faith.score < 0.2 else "low",
             title="Its own reasons don't match what really moves it",
-            detail="The words the model said it relied on made little difference when removed, while other words mattered more.",
+            detail="The words the model said it relied on made little difference when removed, while other words mattered more. This check is a rough hint, based on a single try.",
             evidence=[],
         ))
 

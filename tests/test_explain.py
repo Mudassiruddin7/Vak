@@ -14,7 +14,7 @@ GOOD_TE = (
     "మీ ప్రశ్నను చిన్న మార్పులతో మళ్ళీ మళ్ళీ అడిగి చూశాము. "
     "చిన్న అక్షర దోషాలు వస్తే జవాబు మారింది. "
     "ఇది రైలు స్టేషన్ ప్రకటనలో గోల వచ్చినా అర్థం మారకూడదు అన్నట్టు. "
-    "స్థిరత్వానికి 100 కి 62 మార్కులు వచ్చాయి. "
+    "స్థిరత్వానికి 100 కి 72 మార్కులు వచ్చాయి. "
     "ముందుగా ప్రశ్నను శుభ్రం చేసి పంపండి."
 )
 
@@ -66,6 +66,18 @@ def test_script_and_length_checks():
     assert rules.check("Just English words, nothing else. Another sentence here. And a third. And a fourth.", "te").wrong_script
     assert rules.check("ఒకటి. రెండు.", "te").too_short
     assert rules.check(" ".join(["ఇది ఒక వాక్యం."] * 20), "te").too_long
+
+
+def test_numbers_must_come_from_the_audit():
+    report = make_report(score=0.72)          # 18 tests, 4 unexpected
+    facts = rules.Facts.from_report(report)
+    ok = rules.check(GOOD_TE, "te", facts)
+    assert ok.ok, ok
+    invented = rules.check(GOOD_TE.replace("72", "64").replace("తో", "తో 14 సార్లు"), "te", facts)
+    assert invented.invented_numbers == ["14", "64"] and invented.missing_score
+    assert "14" in invented.feedback() and "out of 100" in invented.feedback()
+    # Telugu digits are read as digits, small counts and the audit's own numbers are fine
+    assert rules.check("స్థిరత్వం ౭౨, మొత్తం 18, అనవసరంగా 4, మూడు 3.", "te", facts).invented_numbers == []
 
 
 def test_clean_flattens_markdown_and_bullets():
@@ -168,6 +180,14 @@ async def test_clean_reply_is_used_as_is(clients, settings):
     out = await Explainer(wire.chat, settings).explain(make_report(), "te", seed="x")
     assert out.source == "model" and out.attempts == 1
     assert out.text == GOOD_TE and len(out.sentences) == 6
+
+
+async def test_invented_figures_are_treated_like_any_other_violation(clients, settings):
+    handler = chat_returning(GOOD_TE.replace("72", "64"), GOOD_TE)
+    wire = clients(handler)
+    out = await Explainer(wire.chat, settings).explain(make_report(), "te", seed="x")
+    assert out.source == "model" and out.attempts == 2 and "72" in out.text
+    assert "64" in handler.seen[1]["messages"][-1]["content"]
 
 
 async def test_violations_are_fed_back_and_the_second_try_wins(clients, settings):
