@@ -20,6 +20,7 @@ from .budget import BudgetExhausted
 from .catalog import CHAT_MODELS, DEPTHS, LANGS, VOICES
 from .config import Settings
 from .errors import describe
+from .explain import fallback
 from .export import report_markdown
 from .sarvam import SarvamError
 from .service import Services
@@ -33,7 +34,7 @@ SAMPLES = [
      "label": {"en": "Rice price sum", "te": "బియ్యం లెక్క", "hi": "चावल का हिसाब"}},
     {"id": "train", "lang": "hi", "text": "दिल्ली से हैदराबाद की ट्रेन में कितने घंटे लगते हैं?", "target": None,
      "label": {"en": "Train journey", "te": "రైలు ప్రయాణం", "hi": "ट्रेन का सफ़र"}},
-    {"id": "film-shaky", "lang": "te", "text": "ఈ సినిమా చాలా బాగుంది, కథ అద్భుతం.", "target": {"kind": "demo", "model": "mood-shaky"},
+    {"id": "film-shaky", "lang": "te", "text": "చెత్త సినిమా! డబ్బులు వృథా అయ్యాయి.", "target": {"kind": "demo", "model": "mood-shaky"},
      "label": {"en": "Film review · shaky practice model", "te": "సినిమా సమీక్ష · తడబడే మోడల్", "hi": "फ़िल्म की राय · डगमग मॉडल"}},
     {"id": "film-steady", "lang": "hi", "text": "यह फ़िल्म बहुत अच्छी है, कहानी शानदार है।", "target": {"kind": "demo", "model": "mood-steady"},
      "label": {"en": "Film review · steady practice model", "te": "సినిమా సమీక్ష · స్థిరమైన మోడల్", "hi": "फ़िल्म की राय · स्थिर मॉडल"}},
@@ -114,6 +115,10 @@ def create_app(settings: Settings | None = None, *, transport=None) -> FastAPI:
                 "default": settings.target_model,
             },
             "voices": {lang: [{"id": v.id, "name": v.name, "gender": v.gender} for v in voices] for lang, voices in VOICES.items()},
+            "findings": {
+                lang: {"flags": bank["flags"], "steps": bank["steps"], "not_tested": bank["not_tested"]}
+                for lang, bank in (("te", fallback.TE), ("hi", fallback.HI))
+            },
             "samples": SAMPLES,
             "limits": {"prompt_chars": settings.max_prompt_chars, "clip_seconds": 30, "cost_cap_inr": settings.audit_cost_cap_inr},
         }

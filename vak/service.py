@@ -141,7 +141,7 @@ class Services:
             if status == 500:
                 log.exception("audit %s failed", audit_id)
             self.store.audit_update(audit_id, status="failed", error=message)
-            await job.emit("error", {"code": code, "message": message})
+            await job.emit("failure", {"code": code, "message": message})
         finally:
             await job.close()
 

@@ -17,6 +17,8 @@ from ..config import Settings
 
 RETRY_STATUS = {429, 500, 502, 503, 504}
 NO_RETRY_CODES = {"seat_budget_exhausted_error", "insufficient_quota_error"}
+REQUEST_TIMEOUT_SECONDS = 45.0
+MAX_TIMEOUTS = 2          # a call that goes silent twice is not worth a third try
 
 
 class SarvamError(Exception):
@@ -128,7 +130,7 @@ class SarvamHTTP:
         self._client = httpx.AsyncClient(
             base_url=settings.base_url,
             headers={"api-subscription-key": settings.api_key} if settings.api_key else {},
-            timeout=httpx.Timeout(90.0, connect=10.0),
+            timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS, connect=10.0),
             limits=httpx.Limits(max_connections=24, max_keepalive_connections=12),
             transport=transport,
         )
@@ -155,6 +157,7 @@ class SarvamHTTP:
             raise AuthError("No Sarvam API key found. Add SARVAM_API_KEY to your .env file.", status=403, code="invalid_api_key_error")
         limiter = self._buckets[bucket]
         last_exc: Exception | None = None
+        timeouts = 0
         for attempt in range(1, self.max_attempts + 1):
             await limiter.acquire()
             try:
@@ -162,7 +165,8 @@ class SarvamHTTP:
                     resp = await self._client.request(method, path, json=json, data=data, files=files, timeout=timeout)
             except (httpx.TimeoutException, httpx.TransportError) as exc:
                 last_exc = exc
-                if attempt == self.max_attempts:
+                timeouts += isinstance(exc, httpx.TimeoutException)
+                if attempt == self.max_attempts or timeouts >= MAX_TIMEOUTS:
                     break
                 await asyncio.sleep(self._backoff(attempt))
                 continue

@@ -33,7 +33,7 @@ def api(tmp_path):
     stack.close()
 
 
-def read_events(client, audit_id: str, stop=("done", "error", "cancelled")) -> list[tuple[str, dict]]:
+def read_events(client, audit_id: str, stop=("done", "failure", "cancelled")) -> list[tuple[str, dict]]:
     out: list[tuple[str, dict]] = []
     with client.stream("GET", f"/api/audits/{audit_id}/events") as resp:
         assert resp.status_code == 200 and resp.headers["content-type"].startswith("text/event-stream")
@@ -66,6 +66,12 @@ def test_health_and_config(api):
     assert cfg["targets"]["default"] == "sarvam-105b-conversations"
     assert len(cfg["samples"]) >= 3 and set(cfg["voices"]) == {"te", "hi"}
     assert "<title>" in client.get("/").text
+
+
+def test_config_ships_the_translated_findings(api):
+    cfg = api().get("/api/config").json()
+    assert set(cfg["findings"]) == {"te", "hi"}
+    assert cfg["findings"]["te"]["flags"]["surface_noise"] and cfg["findings"]["hi"]["not_tested"]["long"]
 
 
 def test_nothing_secret_leaves_through_config(api):
@@ -170,7 +176,7 @@ def test_out_of_credits_is_explained_not_dumped(api):
     assert "dashboard" in resp.json()["error"]["message"]
 
 
-def test_a_failure_mid_audit_arrives_as_an_error_event(api):
+def test_a_failure_mid_audit_arrives_as_a_failure_event(api):
     class Flaky(FakeSarvam):
         def __call__(self, request):
             if "KEY:" not in request.content.decode() and self.paths["/v1/chat/completions"] >= 2 and request.url.path.endswith("completions"):
@@ -182,7 +188,7 @@ def test_a_failure_mid_audit_arrives_as_an_error_event(api):
     audit_id = client.post("/api/audits", json=body).json()["id"]
     events = read_events(client, audit_id)
     name, data = events[-1]
-    assert name == "error" and data["code"] == "out_of_credits"
+    assert name == "failure" and data["code"] == "out_of_credits"
     assert client.get(f"/api/audits/{audit_id}").json()["status"] == "failed"
 
 

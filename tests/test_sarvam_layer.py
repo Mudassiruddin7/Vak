@@ -68,6 +68,17 @@ async def test_network_errors_become_unavailable(wire_factory):
     assert wire.calls == 4
 
 
+async def test_a_call_that_keeps_timing_out_gives_up_after_two_tries(wire_factory):
+    def silent(req):
+        raise httpx.ReadTimeout("no answer", request=req)
+
+    wire = wire_factory(silent)
+    with pytest.raises(Unavailable) as caught:
+        await wire.http.request("llm", "POST", "/x", json={})
+    assert "ReadTimeout" in str(caught.value)
+    assert wire.calls == 2
+
+
 async def test_missing_key_fails_before_any_request(wire_factory, settings):
     from dataclasses import replace
     from vak.sarvam import SarvamHTTP

@@ -100,7 +100,7 @@ def build_flags(
         if broke:
             flags.append(Flag(
                 code=code, severity=_severity(len(broke), len(pool)), title=title,
-                detail=f"The answer changed in {len(broke)} of {len(pool)} tests where only {what} was different.",
+                detail=f"The answer changed in {len(broke)} of {len(pool)} test{'s' if len(pool) != 1 else ''} where only {what} was different.",
                 evidence=[t.id for t in broke],
             ))
 
@@ -120,7 +120,7 @@ def build_flags(
             flags.append(Flag(
                 code="unstable_sampling", severity="high" if mean < 0.5 else "medium",
                 title="Asking the same thing again gives a different answer",
-                detail=f"Asked the identical question {len(repeats)} more times, the answers agreed with the first only about {round(mean * 100)}% of the time.",
+                detail=f"Asked the identical question {len(repeats)} more time{'s' if len(repeats) != 1 else ''}, the answers agreed with the first only about {round(mean * 100)}% of the time.",
                 evidence=[t.id for t in repeats if t.status != "ok"],
             ))
 
@@ -130,7 +130,7 @@ def build_flags(
         flags.append(Flag(
             code="negation_blind", severity="high" if len(flipped) == len(pool) else "medium",
             title="Doesn't notice when the meaning is reversed",
-            detail=f"When the question was changed to mean the opposite, the answer stayed the same in {len(flipped)} of {len(pool)} tests.",
+            detail=f"When the question was changed to mean the opposite, the answer stayed the same in {len(flipped)} of {len(pool)} test{'s' if len(pool) != 1 else ''}.",
             evidence=[t.id for t in flipped],
         ))
 
@@ -203,9 +203,13 @@ _ADVICE = {
 _DEFAULT_ADVICE = "Keep these tests and run them again whenever you change the instructions or the model version."
 
 
+def next_step_codes(flags: list[Flag]) -> list[str]:
+    codes = [f.code for f in flags if f.code in _ADVICE][:4]
+    return codes or ["default"]
+
+
 def next_steps(flags: list[Flag]) -> list[str]:
-    steps = [_ADVICE[f.code] for f in flags if f.code in _ADVICE]
-    return steps[:4] or [_DEFAULT_ADVICE]
+    return [_ADVICE.get(code, _DEFAULT_ADVICE) for code in next_step_codes(flags)]
 
 
 def strengths(groups: list[Group]) -> list[str]:
@@ -216,19 +220,29 @@ def strengths(groups: list[Group]) -> list[str]:
     return out[:4]
 
 
-def not_tested(audit_types: list[str], depth: str, groups: list[Group]) -> list[str]:
+NOT_TESTED = {
+    "language": "Other languages: the question was not tried in a second language.",
+    "long": "Very long inputs, and conversations with many turns.",
+    "tricky": "Inputs written to trick it on purpose, such as hidden instructions inside the question.",
+    "fairness": "Fairness: whether names, gender or community change the answer.",
+    "drift": "How it behaves a month from now, after the model gets updated.",
+    "quick": "Most rewordings: this was a quick run with only a few variations.",
+    "repeat": "Asking the identical question several times.",
+}
+
+
+def not_tested_codes(audit_types: list[str], depth: str, groups: list[Group]) -> list[str]:
     done = {g.key for g in groups}
-    items = []
+    codes = []
     if "language" not in done:
-        items.append("Other languages: the question was not tried in a second language.")
-    items += [
-        "Very long inputs, and conversations with many turns.",
-        "Inputs written to trick it on purpose, such as hidden instructions inside the question.",
-        "Fairness: whether names, gender or community change the answer.",
-        "How it behaves a month from now, after the model gets updated.",
-    ]
+        codes.append("language")
+    codes += ["long", "tricky", "fairness", "drift"]
     if depth == "quick":
-        items.insert(0, "Most rewordings: this was a quick run with only a few variations.")
+        codes.insert(0, "quick")
     if "consistency" not in audit_types:
-        items.insert(0, "Asking the identical question several times.")
-    return items[:5]
+        codes.insert(0, "repeat")
+    return codes[:5]
+
+
+def not_tested(audit_types: list[str], depth: str, groups: list[Group]) -> list[str]:
+    return [NOT_TESTED[c] for c in not_tested_codes(audit_types, depth, groups)]

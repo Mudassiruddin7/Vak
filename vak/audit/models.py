@@ -143,7 +143,9 @@ class Report(BaseModel):
     flags: list[Flag]
     strengths: list[str] = Field(default_factory=list)
     next_steps: list[str]
+    next_step_codes: list[str] = Field(default_factory=list)
     not_tested: list[str]
+    not_tested_codes: list[str] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
     judge_used: bool = True

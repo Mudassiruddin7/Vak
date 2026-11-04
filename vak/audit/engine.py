@@ -24,6 +24,7 @@ from .targets import Answer, Target, TargetError
 
 Emit = Callable[[str, dict], Awaitable[None]]
 RUN_TIMEOUT_SECONDS = 480.0
+CALL_TIMEOUT_SECONDS = 120.0
 RESAMPLE_TEMPERATURE = 0.8
 
 
@@ -49,12 +50,14 @@ class _Run:
             if self.fatal:
                 raise self.fatal[0]
             try:
-                return await self.target.ask(text, temperature=temperature, n=n)
+                return await asyncio.wait_for(self.target.ask(text, temperature=temperature, n=n), CALL_TIMEOUT_SECONDS)
             except (AuthError, OutOfCredits) as exc:
                 self.fatal.append(exc)
                 raise
             except (SarvamError, TargetError) as exc:
                 return [Answer("", error=str(exc)) for _ in range(n)]
+            except TimeoutError:
+                return [Answer("", error="The model took too long to answer.") for _ in range(n)]
 
     async def tick(self) -> None:
         self.done += 1
@@ -144,7 +147,9 @@ class Engine:
             total_perturbations=total, unexpected_changes=unexpected, skipped=skipped,
             tests=tests, groups=groups, units=ranked, faithfulness=faith, flags=flags,
             strengths=scoring.strengths(groups), next_steps=scoring.next_steps(flags),
+            next_step_codes=scoring.next_step_codes(flags),
             not_tested=scoring.not_tested(plan.audit_types, plan.depth, groups),
+            not_tested_codes=scoring.not_tested_codes(plan.audit_types, plan.depth, groups),
             notes=run.notes, judge_used=judge_used,
         )
         return report

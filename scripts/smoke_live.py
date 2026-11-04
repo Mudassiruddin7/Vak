@@ -57,7 +57,7 @@ async def main(args: argparse.Namespace) -> None:
                 print(f"[{time.monotonic() - started:5.1f}s] {event}: {data}")
             elif event == "progress" and data["done"] in (data["total"], data["total"] // 2):
                 print(f"[{time.monotonic() - started:5.1f}s] progress {data['done']}/{data['total']}")
-            elif event in ("error", "notice", "cancelled"):
+            elif event in ("failure", "notice", "cancelled"):
                 print(f"[{time.monotonic() - started:5.1f}s] {event}: {data}")
             seen += 1
 

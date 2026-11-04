@@ -109,6 +109,34 @@ async def _noop():
     return None
 
 
+async def test_one_stuck_call_costs_a_card_not_the_audit(engine, monkeypatch):
+    import vak.audit.engine as engine_module
+    from vak.audit.targets import Answer, Target
+
+    monkeypatch.setattr(engine_module, "CALL_TIMEOUT_SECONDS", 0.05)
+
+    class Sticky(Target):
+        label = "sticky"
+        can_explain = False
+
+        async def ask(self, prompt, *, temperature=0.0, n=1, max_tokens=420):
+            import asyncio
+            if "  " in prompt:                 # the double-spaced variant never comes back
+                await asyncio.sleep(5)
+            return [Answer("ok") for _ in range(n)]
+
+    wire = engine()
+    events: list = []
+
+    async def emit(name, data):
+        events.append(name)
+
+    report = await wire.engine.run(AuditRequest(plan=Plan(prompt=PROMPT, prompt_language="te", depth="quick")), Sticky(), emit)
+    errored = [t for t in report.tests if t.status == "error"]
+    assert errored and all("too long" in t.reason for t in errored)
+    assert report.skipped == len(errored) and report.consistency_score > 0.5
+
+
 async def test_reference_that_disagrees_is_flagged(engine):
     wire = engine()
     report, _ = await run_audit(wire, "mood-steady", reference="ప్రతికూలం")
@@ -137,6 +165,24 @@ def test_consistency_weights_and_counts():
     score, total, unexpected, skipped = scoring.consistency(tests)
     assert (score, total, unexpected, skipped) == (0.5, 2, 1, 1)
     assert scoring.grade_for(0.59) == "concerning" and scoring.grade_for(0.7) == "mixed" and scoring.grade_for(0.86) == "steady"
+
+
+def test_every_engine_code_has_telugu_and_hindi_wording():
+    """The UI swaps in hand-checked Telugu/Hindi by code, so a code without a translation would show English."""
+    from vak.explain import fallback
+
+    for bank in (fallback.TE, fallback.HI):
+        assert set(scoring._ADVICE) <= set(bank["flags"]) & set(bank["steps"])
+        assert set(scoring.NOT_TESTED) == set(bank["not_tested"])
+    codes = scoring.not_tested_codes(["perturbation"], "quick", [])
+    assert codes[0] == "repeat" and "quick" in codes and len(scoring.not_tested(["perturbation"], "quick", [])) == len(codes) <= 5
+    assert scoring.next_step_codes([]) == ["default"]
+
+
+def test_detail_text_reads_naturally_for_a_single_test():
+    tests = [make_test("script", "invariance", 0.0, "s1")]
+    flags = scoring.build_flags(tests, [], Faithfulness(), baseline_output="x", prompt_language="en", reference_agrees=None)
+    assert "1 of 1 test where" in flags[0].detail
 
 
 def test_flag_severity_follows_the_failure_rate():
