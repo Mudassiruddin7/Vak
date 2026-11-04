@@ -38,10 +38,11 @@ the script of the text: Urdu and Kashmiri are right to left in Nastaliq, Sindhi 
 
 ## Look
 
-Cool paper, one steel-blue, and a clay red used only for what changed. Three pen marks carry meaning: a tick for an
-answer that held, a wave for one that wobbled, a strike for one that changed. Type is Anek, one family drawn for Latin and
-nine Indian scripts. Every text colour passes WCAG AA (ratios computed, not assumed). The logo is a lowercase v with
-one dot, like the dot that marks a nasal sound in Devanagari and Telugu.
+A white day theme and nothing else: white paper, soft sky for buttons, one steel-blue for links, and a clay red used
+only for what changed. There is no dark mode on purpose. Three pen marks carry meaning: a tick for an answer that held,
+a wave for one that wobbled, a strike for one that changed. Type is Anek, one family drawn for Latin and nine Indian
+scripts. Every text colour passes WCAG AA (ratios computed, not assumed). The logo is a lowercase v with one dot, like
+the dot that marks a nasal sound in Devanagari and Telugu.
 
 ## Public-deployment safety
 

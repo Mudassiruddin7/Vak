@@ -36,4 +36,4 @@ export function mark(status, size = 18) {
 
 /** The Vak mark, the "bindu v": a lowercase v with one dot, like the dot that marks a nasal sound in Devanagari
  *  and Telugu. Same drawing as img/favicon.svg. */
-export const LOGO = raw(`<svg class="logo-mark" width="32" height="32" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#3A5F7D"/><path d="M15 26 L28 48 L41 26" fill="none" stroke="#F9FBFC" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="17" r="4.8" fill="#EBD3B8"/></svg>`);
+export const LOGO = raw(`<svg class="logo-mark" width="32" height="32" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#DCEBF5"/><path d="M15 26 L28 48 L41 26" fill="none" stroke="#2F6288" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="17" r="4.8" fill="#E3A76F"/></svg>`);

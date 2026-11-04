@@ -1,21 +1,21 @@
-/* Vak: a quiet desk. Rain-washed cool paper, one steel-blue ink, a clay red used only for what changed.
-   Three pen marks (tick, wave, strike) carry meaning. One stylesheet, one set of tokens: change the palette here. */
+/* Vak: a white day desk. White paper, one steel-blue ink for links, soft sky for buttons, a clay red used only for
+   what changed. Three pen marks (tick, wave, strike) carry meaning. There is no dark mode on purpose.
+   One stylesheet, one set of tokens: change the palette here. */
 :root {
-  --paper: #EEF3F6; --paper-2: #F9FBFC; --paper-3: #D9E5EC;
+  --paper: #FFFFFF; --paper-2: #F5F8FA; --paper-3: #E6EEF3;
   --ink: #1C2A33; --ink-2: #4F6070; --ink-3: #5A6B78;
-  --rule: rgb(28 42 51 / .13); --rule-strong: #7D8D99;
+  --rule: rgb(28 42 51 / .11); --rule-strong: #7D8D99;
   --accent: #A8432F;      /* the pen: what changed, and nothing else */
   --held: #3A7360;        /* a tick */
   --wobble: #8A6516;      /* a wave */
-  --primary: #3A5F7D; --on-primary: #F9FBFC;
-  --sky: #D9E5EC; --sage: #DCE9E1; --clay: #F0DDD6; --sandal: #EBD3B8;
+  --primary: #2F6288;     /* links, focus, progress */
+  --btn: #D3E6F3; --btn-hover: #BFD9EB; --on-btn: #1C2A33;
+  --sky: #E4EFF6; --sky-line: #C4D9E7; --sage: #E3EFE7; --clay: #F8E4DC; --sandal: #F1DFC6;
   --sans: "Anek", "Noto Naskh Arabic", "Noto Sans Meetei Mayek", "Noto Sans Ol Chiki", system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif: var(--sans);
   --r: 8px; --gutter: clamp(1.1rem, 4vw, 2.5rem); --max: 72rem; --ease: cubic-bezier(.2, 0, 0, 1);
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #10181E; --paper-2: #18232B; --paper-3: #243746; --ink: #E4EBEF; --ink-2: #9DAFBB; --ink-3: #8A9CA8; --rule: rgb(228 235 239 / .14); --rule-strong: #6F8190; --accent: #E58F7E; --held: #8FC4AC; --wobble: #D6B25E; --primary: #93B7D4; --on-primary: #10181E; --sky: #243746; --sage: #1F3029; --clay: #3A2A27; color-scheme: dark; } }
-:root[data-theme="dark"] { --paper: #10181E; --paper-2: #18232B; --paper-3: #243746; --ink: #E4EBEF; --ink-2: #9DAFBB; --ink-3: #8A9CA8; --rule: rgb(228 235 239 / .14); --rule-strong: #6F8190; --accent: #E58F7E; --held: #8FC4AC; --wobble: #D6B25E; --primary: #93B7D4; --on-primary: #10181E; --sky: #243746; --sage: #1F3029; --clay: #3A2A27; color-scheme: dark; }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
@@ -48,11 +48,11 @@ em { font-style: normal; background: linear-gradient(transparent 62%, var(--clay
 .link:hover { color: var(--ink); text-decoration-color: var(--accent); }
 
 /* buttons: one solid action, the rest are text */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; background: var(--primary); color: var(--on-primary); border: 0; border-radius: var(--r); padding: .7rem 1.25rem; font-weight: 550; cursor: pointer; text-decoration: none; min-height: 2.75rem; transition: filter .2s, transform .2s var(--ease); }
-.btn:hover { filter: brightness(.92); } .btn:active { transform: translateY(1px); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; background: var(--btn); color: var(--on-btn); border: 0; border-radius: var(--r); padding: .7rem 1.25rem; font-weight: 550; cursor: pointer; text-decoration: none; min-height: 2.75rem; transition: filter .2s, transform .2s var(--ease); }
+.btn:hover { background: var(--btn-hover); } .btn:active { transform: translateY(1px); }
 .btn.sm { min-height: 2.25rem; padding: .35rem .9rem; font-size: .92rem; }
 .btn.line, .btn.dark { background: none; color: var(--ink); border-radius: 0; padding-inline: .1rem; min-height: auto; text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: .35em; }
-.btn.line:hover, .btn.dark:hover { filter: none; text-decoration-color: var(--accent); } .btn.go { background: var(--primary); color: var(--on-primary); }
+.btn.line:hover, .btn.dark:hover { filter: none; text-decoration-color: var(--accent); } .btn.go { background: var(--btn); color: var(--on-btn); }
 .btn[disabled] { opacity: .45; pointer-events: none; }
 .icon-btn { width: 2.5rem; height: 2.5rem; border: 1px solid var(--rule-strong); border-radius: 50%; background: none; display: inline-grid; place-items: center; cursor: pointer; color: var(--ink); } .icon-btn:hover { border-color: var(--ink); }
 .ic { flex: none; }
@@ -69,7 +69,7 @@ label.chip input { accent-color: var(--primary); }
 .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
 .chip { display: inline-flex; align-items: center; gap: .35rem; padding: .12rem .55rem; border: 1px solid var(--rule-strong); border-radius: 3px; font-size: .84rem; color: var(--ink-2); background: none; }
 button.chip { cursor: pointer; } button.chip:hover { border-color: var(--ink); color: var(--ink); }
-.chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip.on { background: var(--sky); color: var(--ink); border-color: var(--sky-line); }
 .chip.ok { color: var(--held); border-color: currentColor; } .chip.wobble { color: var(--wobble); border-color: currentColor; } .chip.broke { color: var(--accent); border-color: currentColor; } .chip.err { color: var(--ink-3); border-style: dashed; }
 .seg { display: inline-flex; gap: 1.2rem; flex-wrap: wrap; } .seg > a, .seg > button { background: none; border: 0; border-bottom: 2px solid transparent; padding: .25rem 0; cursor: pointer; color: var(--ink-2); text-decoration: none; font-weight: 500; }
 .seg > .on { color: var(--ink); border-bottom-color: var(--accent); }
@@ -83,7 +83,7 @@ button.chip { cursor: pointer; } button.chip:hover { border-color: var(--ink); c
 .sheet { padding: clamp(2.2rem, 5vw, 4.5rem) 0; }
 .bench { width: min(100% - 2 * var(--gutter), 56rem); margin-inline: auto; } .bench-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.4rem; } .bench-head h2 { font-size: clamp(1.4rem, 1rem + 1.4vw, 1.9rem); }
 .mic { width: 3.4rem; height: 3.4rem; border-radius: 50%; border: 1.5px solid var(--ink); background: none; color: var(--ink); display: inline-grid; place-items: center; cursor: pointer; flex: none; transition: background .25s, color .25s; } .mic:hover { background: var(--paper-2); }
-.mic.rec { background: var(--sandal); border-color: var(--sandal); color: #1C2A33; animation: breathe 2.4s ease-in-out infinite; } .mic[disabled] { opacity: .4; pointer-events: none; }
+.mic.rec { background: var(--sandal); border-color: #E2C79F; color: #1C2A33; animation: breathe 2.4s ease-in-out infinite; } .mic[disabled] { opacity: .4; pointer-events: none; }
 @keyframes breathe { 50% { box-shadow: 0 0 0 .8rem color-mix(in srgb, var(--sandal) 55%, transparent); } }
 .say { font-size: 1.2rem; line-height: 1.75; } .say s { text-decoration: none; transition: background .25s; border-radius: 3px; } .say s.now { background: var(--sky); }
 .heat span { background: color-mix(in srgb, var(--accent) calc(var(--w) * 38%), transparent); border-radius: 3px; padding: 0 .12em; }
@@ -124,9 +124,9 @@ button.chip { cursor: pointer; } button.chip:hover { border-color: var(--ink); c
 .tr-back { margin-top: .8rem; border-top: 1px dashed var(--rule-strong); padding-top: .8rem; }
 
 /* overlays */
-.toast { position: fixed; left: 50%; bottom: 1.4rem; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: .7rem 1.2rem; border-radius: var(--r); z-index: 90; max-width: min(92vw, 30rem); animation: rise .3s var(--ease); }
-.modal-back { position: fixed; inset: 0; background: rgb(20 26 30 / .45); z-index: 80; display: grid; place-items: center; padding: 1rem; } .modal { background: var(--paper); border-radius: 8px; padding: 1.6rem; width: min(100%, 30rem); max-height: 90vh; overflow: auto; }
-.lang-menu { position: absolute; z-index: 70; width: min(19rem, 92vw); max-height: 23rem; overflow: auto; background: var(--paper); border: 1px solid var(--rule-strong); border-radius: 6px; padding: .3rem; box-shadow: 0 14px 40px -18px rgb(0 0 0 / .45); }
+.toast { position: fixed; left: 50%; bottom: 1.4rem; transform: translateX(-50%); background: var(--paper); color: var(--ink); border: 1px solid var(--rule-strong); box-shadow: 0 12px 30px -14px rgb(28 42 51 / .3); padding: .7rem 1.2rem; border-radius: var(--r); z-index: 90; max-width: min(92vw, 30rem); animation: rise .3s var(--ease); }
+.modal-back { position: fixed; inset: 0; background: rgb(28 42 51 / .14); z-index: 80; display: grid; place-items: center; padding: 1rem; } .modal { background: var(--paper); border-radius: 8px; padding: 1.6rem; width: min(100%, 30rem); max-height: 90vh; overflow: auto; }
+.lang-menu { position: absolute; z-index: 70; width: min(19rem, 92vw); max-height: 23rem; overflow: auto; background: var(--paper); border: 1px solid var(--rule-strong); border-radius: 6px; padding: .3rem; box-shadow: 0 14px 40px -18px rgb(28 42 51 / .28); }
 .lang-menu button { display: flex; width: 100%; justify-content: space-between; align-items: baseline; gap: .8rem; padding: .5rem .7rem; border: 0; background: none; border-radius: 4px; cursor: pointer; text-align: start; } .lang-menu button:hover, .lang-menu button[aria-selected="true"] { background: var(--paper-2); } .lang-menu small { color: var(--ink-3); font-size: .78rem; text-align: end; }
 
 @media (max-width: 860px) {

@@ -18,8 +18,7 @@ const ROUTES = { "": ["audit", home], "/": ["audit", home], "/translate": ["tran
 const NAV = [["audit", "#/"], ["translate", "#/translate"], ["setu", "#/setu"], ["learn", "#/learn"], ["rules", "#/rules"]];
 
 function applyTheme() {
-  const th = S.get().theme;
-  if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
+  document.documentElement.dataset.theme = "light"; // one white day theme, on purpose
 }
 
 const native = (code) => app.config.languages.find((l) => l.code === code)?.native || code.toUpperCase();
@@ -68,8 +67,6 @@ function openSettings() {
       <label class="field">${t("st.key")}<input class="input" id="key" type="password" autocomplete="off" spellcheck="false" placeholder="sk_…" value="${s.ownKey}"></label>
       <p class="hint">${t("st.keyd")}</p>
       <div class="row"><button class="btn sm" id="save-key" type="button">${t("st.save")}</button><button class="btn line" id="rm-key" type="button">${t("st.rm")}</button></div>
-      <div class="row"><span class="muted">${t("st.theme")}</span>
-        <span class="seg" role="group">${[["", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(([v, n]) => html`<button type="button" data-theme-pick="${v}" class="${s.theme === v ? "on" : ""}">${n}</button>`)}</span></div>
       <hr style="border:0;border-top:1px solid var(--rule);width:100%">
       ${!auth.enabled() ? html`<p class="hint">Sign-in isn’t set up on this server.</p>` : signedIn
         ? html`<p>${t("au.hi")} <b>${auth.user().email}</b></p><button class="btn line" id="out" type="button">${t("nav.signout")}</button>`
@@ -85,7 +82,6 @@ function openSettings() {
   api("/api/config").then((c) => { q("#left").textContent = Math.round(c.quota_left * 10) / 10; }).catch(() => {});
   q("#save-key").addEventListener("click", () => { S.set({ ownKey: q("#key").value.trim() }); toast("OK"); });
   q("#rm-key").addEventListener("click", () => { S.set({ ownKey: "" }); q("#key").value = ""; });
-  back.querySelectorAll("[data-theme-pick]").forEach((b) => b.addEventListener("click", () => { S.set({ theme: b.dataset.themePick }); applyTheme(); close(); }));
   q("#out")?.addEventListener("click", () => { auth.signOut(); close(); renderChrome(); });
   const go = (fn) => async () => {
     const msg = q("#auth-msg");
