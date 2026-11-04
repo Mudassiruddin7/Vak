@@ -1,0 +1,9 @@
+The font files in this folder are copies of:
+
+  Fraunces                  Copyright 2020 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)
+  Manrope                   Copyright 2018 The Manrope Project Authors (https://github.com/sharanda/manrope)
+  Noto Sans Telugu          Copyright 2022 The Noto Project Authors (https://github.com/notofonts/telugu)
+  Noto Sans Devanagari      Copyright 2022 The Noto Project Authors (https://github.com/notofonts/devanagari)
+
+They are licensed under the SIL Open Font License, Version 1.1.
+The full text is at https://openfontlicense.org/open-font-license-official-text/
