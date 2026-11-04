@@ -17,15 +17,26 @@ from .text_utils import dominant_language, squash
 SYSTEM = (
     "You help a developer audit an AI model. They speak or type in Telugu, Hindi, English or a mix of these.\n"
     "Read their message and pull out:\n"
-    '- "prompt": the exact text they want to test the model with, copied word for word from their message, in the same '
-    "language and script. If they quoted it, use the quote. If the whole message is just the text to test, return all of it.\n"
+    '- "prompt": ONLY the question or text they want to send to the model, copied word for word from their message, in the '
+    "same language and script. Leave out whatever they say to you about the audit, such as which model to test, "
+    '"test my model with this question", "check this", or "इस सवाल से परखो". If they quoted the text, use the quote. '
+    "If the message is nothing but the text to test, return all of it.\n"
     '- "reference_output": an answer the model gave that they want checked, copied exactly, or null.\n'
-    '- "target_hint": the name of a model if they mention one (for example Gemma, DeepSeek, Sarvam), otherwise null.\n'
-    '- "audit_types": which checks they asked for, any of "consistency" (same answer when asked again), '
+    '- "target_hint": the name of a model if they mention one (for example Gemma, DeepSeek, Sarvam), otherwise null. '
+    "Model names may be spelt in Telugu or Devanagari letters.\n"
+    '- "audit_types": only if they ask for particular kinds of checks, any of "consistency" (same answer when asked again), '
     '"perturbation" (small changes such as typos, rewording, other languages) and "behavioral" (sensible reaction when '
-    "the meaning changes). Use an empty list if they did not say.\n"
+    'the meaning changes). General words like "steady", "consistent", "reliable" or "check" describe the goal, not a '
+    "choice of checks, so use an empty list for them. Use an empty list whenever they did not name specific checks.\n"
     '- "depth": "quick", "standard" or "deep" only if they said how thorough to be, otherwise null.\n'
     '- "language": the language of the prompt: "te", "hi" or "en".\n'
+    "Examples:\n"
+    'Message: నా మోడల్\u200cను ఈ ప్రశ్నతో పరీక్షించు. ఒక కిలో బియ్యం ధర 60 రూపాయలు అయితే మూడు కిలోల ధర ఎంత?\n'
+    '{"prompt": "ఒక కిలో బియ్యం ధర 60 రూపాయలు అయితే మూడు కిలోల ధర ఎంత?", "reference_output": null, "target_hint": null, "audit_types": [], "depth": null, "language": "te"}\n'
+    "Message: जेम्मा मॉडल को इस सवाल से परखो दिल्ली से हैदराबाद की ट्रेन में कितने घंटे लगते हैं?\n"
+    '{"prompt": "दिल्ली से हैदराबाद की ट्रेन में कितने घंटे लगते हैं?", "reference_output": null, "target_hint": "Gemma", "audit_types": [], "depth": null, "language": "hi"}\n'
+    "Message: ఈ సినిమా చాలా బాగుంది, కథ అద్భుతం.\n"
+    '{"prompt": "ఈ సినిమా చాలా బాగుంది, కథ అద్భుతం.", "reference_output": null, "target_hint": null, "audit_types": [], "depth": null, "language": "te"}\n'
     'Reply with JSON only: {"prompt": "", "reference_output": null, "target_hint": null, "audit_types": [], "depth": null, "language": "te"}'
 )
 
@@ -35,6 +46,17 @@ TARGET_KEYWORDS = [
 ]
 
 _QUOTES = [('"', '"'), ("“", "”"), ("‘", "’"), ("«", "»"), ("「", "」")]
+
+
+_WRAPS = {'"': '"', "“": "”", "‘": "’", "«": "»", "「": "」"}
+
+
+def unquote(text: str) -> str:
+    """Drop quotation marks wrapped around the whole text; the model sometimes copies them along."""
+    text = text.strip()
+    while len(text) >= 2 and _WRAPS.get(text[0]) == text[-1]:
+        text = text[1:-1].strip()
+    return text
 
 
 def quoted_segments(text: str) -> list[str]:
@@ -70,7 +92,7 @@ class Orchestrator:
 
         prompt = None
         if data and isinstance(data.get("prompt"), str) and data["prompt"].strip():
-            cand = data["prompt"].strip()
+            cand = unquote(data["prompt"])
             if squash(cand) in squash(text):
                 prompt = cand
             else:

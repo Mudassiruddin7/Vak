@@ -6,7 +6,7 @@ from vak.audit import faithfulness, importance, scoring
 from vak.audit.demo import build_demo
 from vak.audit.engine import AuditFailed, Engine
 from vak.audit.models import AuditRequest, Faithfulness, Plan, TestResult, Unit
-from vak.audit.orchestrator import Orchestrator, quoted_segments, resolve_target
+from vak.audit.orchestrator import Orchestrator, quoted_segments, resolve_target, unquote
 from vak.audit.similarity import Judge, lexical_similarity, lexical_verdict, settled_without_judge
 
 from .fakes import FakeSarvam
@@ -252,6 +252,14 @@ async def test_judge_batches_and_ignores_garbage_rows(clients):
 
 
 # --- orchestrator -----------------------------------------------------------------------------
+
+def test_wrapping_quotes_are_dropped_but_inner_ones_stay():
+    assert unquote('  “ఈ సినిమా బాగుంది”  ') == "ఈ సినిమా బాగుంది"
+    assert unquote('"\'nested\'"') == "'nested'"        # only the outer pair goes
+    assert unquote('"x"') == "x"
+    assert unquote('He said "hi" loudly') == 'He said "hi" loudly'
+    assert unquote("«వచనం»") == "వచనం" and unquote('"') == '"'
+
 
 def test_quotes_and_model_hints():
     assert quoted_segments('నా మోడల్‌ను "ఈ సినిమా బాగుంది" అని అడుగుతున్నా') == ["ఈ సినిమా బాగుంది"]
