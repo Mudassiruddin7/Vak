@@ -7,6 +7,9 @@ from __future__ import annotations
 
 import math
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 
 from .catalog import (
@@ -32,15 +35,37 @@ class BudgetExhausted(Exception):
     pass
 
 
+class Tally:
+    """Rupees spent inside one `with budget.track()` block, across every task started in it."""
+
+    def __init__(self) -> None:
+        self.inr = 0.0
+
+
+_current_tally: ContextVar[Tally | None] = ContextVar("vak_tally", default=None)
+
+
 class Budget:
     def __init__(self, store: Store, allocations: dict[str, float]):
         self.store = store
         self.allocations = allocations
 
+    @contextmanager
+    def track(self) -> Iterator[Tally]:
+        tally = Tally()
+        token = _current_tally.set(tally)
+        try:
+            yield tally
+        finally:
+            _current_tally.reset(token)
+
     def record(self, service: str, units: float, unit: str, cost: float, note: str = "") -> None:
         if service not in SERVICES:
             raise ValueError(f"unknown service {service!r}")
         self.store.ledger_add(service, units, unit, cost, note)
+        tally = _current_tally.get()
+        if tally is not None:
+            tally.inr += cost
 
     def summary(self) -> dict:
         totals = self.store.ledger_totals()
