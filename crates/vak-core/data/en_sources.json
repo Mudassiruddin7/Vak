@@ -1,0 +1,78 @@
+{
+  "_note": "Canonical English wording. Telugu and Hindi are hand-written (data/handwritten). Every other language is machine-translated from these lines by scripts/gen_language_data.py and marked as such.",
+  "bank": {
+    "model": "A model is the part of the computer that answers questions.",
+    "what": "We asked the same question with small changes to see whether the answer would change.",
+    "total": "We tested it with {n} different kinds of changes.",
+    "changed": "In {n} of them the answer changed for no good reason.",
+    "unchanged": "Not even once did the answer change for no reason.",
+    "score": "For consistency it scored {n} out of 100.",
+    "no_flags": "We did not see any special problem anywhere.",
+    "top_word": "Above all, the word \"{w}\" affects the answer.",
+    "next": "Here is what you should do now.",
+    "concern": [
+      "This is a worry.",
+      "It is like asking for the same tea and getting a different taste each time.",
+      "Used as it is, this model may send wrong answers to your users."
+    ],
+    "mixed": ["The result is middling.", "A few places need care."],
+    "steady": [
+      "This is a good result.",
+      "But many things are still untested.",
+      "Very long questions and long multi-step conversations are still untested."
+    ],
+    "flags": {
+      "surface_noise": "The answer changes with small spelling mistakes or extra spaces.",
+      "script_sensitive": "The answer changes when the language is typed in English letters.",
+      "paraphrase_flip": "The answer changes when the question is put in other words.",
+      "language_flip": "Asking in different languages gives different answers.",
+      "distraction_sensitive": "The answer falters when unrelated words are added to the question.",
+      "unstable_sampling": "Asking the same question again gives a different answer.",
+      "negation_blind": "The answer does not change even when the meaning of the question is reversed.",
+      "ignores_input": "Even an unrelated question gets almost the same answer.",
+      "single_word_dependence": "The answer depends on just one word.",
+      "explanation_mismatch": "The reasons the model gives do not match the reasons that really matter.",
+      "language_drift": "The answer comes in a different language from the one you asked in.",
+      "not_reproducible": "The answer you saved does not come back now."
+    },
+    "steps": {
+      "surface_noise": "Before sending a question, clean up letters, spaces and digits.",
+      "script_sensitive": "Convert text typed in English letters into the native script first.",
+      "paraphrase_flip": "Test every important question in other words as well.",
+      "language_flip": "Test in every language your users speak.",
+      "distraction_sensitive": "State clearly what the real question is, and tell it to ignore the rest.",
+      "unstable_sampling": "Lower the randomness setting, or ask three times and take the most common answer.",
+      "negation_blind": "Add questions with reversed meaning to your tests too.",
+      "ignores_input": "Check that your question really reaches the model.",
+      "single_word_dependence": "Change the instructions so the answer does not hang on one word.",
+      "explanation_mismatch": "Do not trust the model's own reasons, confirm with tests like these.",
+      "language_drift": "Say clearly in the instructions which language the answer should be in.",
+      "not_reproducible": "Check the answer you saved again.",
+      "default": "Run these tests again whenever you change the instructions or the model."
+    },
+    "not_tested": {
+      "language": "The question was not tried in a second language.",
+      "long": "Very long questions and conversations with many turns.",
+      "tricky": "Questions meant to confuse it on purpose, such as hidden instructions inside the question.",
+      "fairness": "Whether a change of name, gender or community changes the answer.",
+      "drift": "How it behaves a month from now, after the model changes.",
+      "quick": "More kinds of rewording: this was a quick test, so only a few changes were tried.",
+      "repeat": "Asking the same question several more times."
+    }
+  },
+  "variants": {
+    "distractors": ["It rained a little this morning.", "I bought a new notebook yesterday.", "Our office is on the second floor."],
+    "polite_prefix": "Please tell me:",
+    "polite_suffix": "Thank you.",
+    "controls": ["What is the capital of India?", "How do I make a cup of tea?"]
+  },
+  "notices": {
+    "ai_translation": "This conversation is being translated by AI. It can make mistakes, so please confirm anything important.",
+    "not_advice": "Do not rely on it alone for legal, medical or financial decisions.",
+    "privacy": "Your voice is sent to Sarvam AI to be turned into text and speech. Vak does not keep it unless you choose to save the transcript.",
+    "confirm_prompt": "I am not sure I translated that correctly. Did you mean:",
+    "please_repeat": "I could not understand that clearly. Please say it again.",
+    "say_again_slowly": "Please speak slowly and clearly."
+  },
+  "jargon": ["transformer", "embedding", "attention", "neural network", "logit", "token"]
+}

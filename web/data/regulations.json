@@ -1,0 +1,23 @@
+{
+  "note": "A short list, written by hand from public sources. It is a starting point for a conversation with a lawyer, not a checklist. Each entry links to where to read it.",
+  "items": [
+    { "id": "dpdp-notice", "applies": "all", "title": "Consent notices in English or any of the 22 scheduled languages",
+      "summary": "Under the Digital Personal Data Protection Act, 2023, a request for consent has to be given in clear, plain language, and the person must be able to read it in English or in any language listed in the Eighth Schedule of the Constitution (sections 5 and 6). If your app collects personal data from Indian users, the notice belongs in their language.",
+      "source": "https://www.meity.gov.in/data-protection-framework" },
+    { "id": "dpdp-rules", "applies": "all", "title": "The DPDP Rules apply in phases",
+      "summary": "The Digital Personal Data Protection Rules, 2025 were notified in November 2025. Different duties start at different times, with most obligations on businesses coming after an 18-month phase-in. Check the dates that apply to you.",
+      "source": "https://www.meity.gov.in/data-protection-framework" },
+    { "id": "rbi-kfs", "applies": "all", "title": "Loan terms in a language the borrower understands",
+      "summary": "The Reserve Bank of India expects the Key Facts Statement and the main terms of a retail loan to be given in a language the borrower understands. If a lending flow uses machine translation, a person should be able to ask for a human-checked version.",
+      "source": "https://www.rbi.org.in" },
+    { "id": "art-22", "applies": "all", "title": "Grounds of arrest must be understood by the person arrested",
+      "summary": "Article 22(1) of the Constitution gives an arrested person the right to be told the grounds of arrest, and the Bharatiya Nagarik Suraksha Sanhita (section 47) repeats it. The Supreme Court has said this must be meaningful: in writing, and in a language the person understands. Live machine interpreting can help in the moment, but it does not replace a written, verified notice.",
+      "source": "https://www.sci.gov.in" },
+    { "id": "art-350", "applies": "all", "title": "The right to petition in any language in use",
+      "summary": "Article 350 lets anyone submit a representation for the redress of a grievance to a Union or State officer in any language used in the Union or the State.",
+      "source": "https://legislative.gov.in/constitution-of-india/" },
+    { "id": "say-it-is-ai", "applies": "all", "title": "Tell people they are talking through an AI interpreter",
+      "summary": "This is good practice rather than a rule Vak can cite: say at the start that the translation is automatic, that it can be wrong, and that important points should be confirmed. Setu reads this notice aloud in both languages before a conversation in a sensitive setting.",
+      "source": "" }
+  ]
+}
