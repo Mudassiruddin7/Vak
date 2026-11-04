@@ -130,7 +130,9 @@ pub fn build_system(report: &Report, lang: Lang, seed: &str) -> String {
         ("not_tested_local", bank.steady.iter().skip(1).cloned().collect::<Vec<_>>().join(" ")),
         ("steps_local", steps_local),
     ];
-    fill(TEMPLATE, &values)
+    let filled = fill(TEMPLATE, &values);
+    // languages without writing notes of their own leave these two lines empty; drop them rather than show a bare label
+    filled.lines().filter(|l| !(l.starts_with("- How to address the reader:") || l.starts_with("- Register:")) || l.trim_end().len() > l.find(':').map_or(0, |i| i + 1)).collect::<Vec<_>>().join("\n")
 }
 
 pub fn build_user(lang: Lang) -> String {

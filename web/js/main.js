@@ -1,45 +1,43 @@
 import { $, html, mount, el } from "./dom.js";
-import { t, setLang, getLang, initialLang } from "./i18n.js";
+import { t, setLang, getLang, initialLang, loadLang } from "./i18n.js";
 import "./strings.js";
 import * as S from "./state.js";
 import * as auth from "./auth.js";
 import { api } from "./api.js";
-import { MITTHU_MARK } from "./mascot-svg.js";
+import { LOGO, icon } from "./icons.js";
 import { toast, reveal } from "./fx.js";
+import { pickLanguage } from "./langpick.js";
 import { home } from "./views/home.js";
 import { setu } from "./views/setu.js";
 import { learn } from "./views/learn.js";
 import { rules } from "./views/rules.js";
 import { translate } from "./views/translate.js";
 
-export const app = { config: null, route: "audit", cleanup: null };
-const ROUTES = { "": ["audit", home], "/": ["audit", home], "/setu": ["setu", setu], "/translate": ["translate", translate], "/learn": ["learn", learn], "/rules": ["rules", rules] };
+export const app = { config: null, route: "audit", cleanup: null, uiLangs: ["en", "hi", "te"] };
+const ROUTES = { "": ["audit", home], "/": ["audit", home], "/translate": ["translate", translate], "/setu": ["setu", setu], "/learn": ["learn", learn], "/rules": ["rules", rules] };
+const NAV = [["audit", "#/"], ["translate", "#/translate"], ["setu", "#/setu"], ["learn", "#/learn"], ["rules", "#/rules"]];
 
 function applyTheme() {
   const th = S.get().theme;
   if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
 }
 
+const native = (code) => app.config.languages.find((l) => l.code === code)?.native || code.toUpperCase();
+
+async function pickLang(code) {
+  await loadLang(code);
+  setLang(code); S.set({ uiLang: code }); renderChrome(); route();
+}
+
 function renderChrome() {
-  const lang = getLang();
-  mount($("#announce"), html`${t("announce.text")} <a href="#/setu">${t("announce.cta")} →</a>`);
-  const s = S.get();
   mount($("#nav"), html`
-    <a class="logo" href="#/" aria-label="Vak"><img src="/img/favicon.svg" alt="" width="30" height="30">Vak</a>
-    <nav class="seg" aria-label="Sections">
-      <a href="#/" class="${app.route === "audit" ? "on" : ""}">${t("nav.audit")}</a>
-      <a href="#/translate" class="${app.route === "translate" ? "on" : ""}">${t("nav.translate")}</a>
-      <a href="#/setu" class="${app.route === "setu" ? "on" : ""}">${t("nav.setu")}</a>
-      <a href="#/learn" class="${app.route === "learn" ? "on" : ""}">${t("nav.learn")}</a>
-    </nav>
-    <div class="nav-links">
-      <a class="hide-sm" href="#/rules">${t("nav.rules")}</a>
-      <span class="langpick" role="group" aria-label="Language">
-        ${["te", "hi", "en"].map((c) => html`<button type="button" data-lang="${c}" aria-pressed="${lang === c}">${c === "te" ? "తె" : c === "hi" ? "हि" : "EN"}</button>`)}
-      </span>
+    <a class="logo" href="#/" aria-label="Vak">${LOGO}<span>vak</span><small>వాక్కు</small></a>
+    <nav class="nav" aria-label="Sections">${NAV.map(([id, href]) => html`<a href="${href}" ${app.route === id ? 'aria-current="page"' : ""}>${t("nav." + id)}</a>`)}</nav>
+    <div class="hdr-end">
+      <button class="link" type="button" id="lang-btn" aria-haspopup="dialog" lang="${getLang()}">${native(getLang())}</button>
       <button class="link" type="button" id="open-settings">${auth.user() ? auth.user().email?.split("@")[0] : t("nav.settings")}</button>
     </div>`);
-  $("#nav").querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => { setLang(b.dataset.lang); S.set({ uiLang: b.dataset.lang }); renderChrome(); route(); }));
+  $("#lang-btn").addEventListener("click", (e) => pickLanguage({ anchor: e.currentTarget, languages: app.config.languages, only: app.uiLangs, current: getLang(), onPick: pickLang }));
   $("#open-settings").addEventListener("click", openSettings);
 }
 
@@ -64,25 +62,25 @@ function openSettings() {
   back.addEventListener("click", (e) => { if (e.target === back) close(); });
   const signedIn = !!auth.user();
   mount(back.appendChild(el("div", { class: "modal", role: "dialog", "aria-modal": "true" })), html`
-    <div class="bench-head"><h3 class="h3">${t("st.title")}</h3><button class="icon-btn" type="button" id="x" aria-label="${t("st.close")}">✕</button></div>
+    <div class="bench-head"><h3 class="h3">${t("st.title")}</h3><button class="icon-btn" type="button" id="x" aria-label="${t("st.close")}">${icon("close", 18)}</button></div>
     <div class="stack">
       <p class="muted">${t("st.left")}: <b id="left">…</b></p>
       <label class="field">${t("st.key")}<input class="input" id="key" type="password" autocomplete="off" spellcheck="false" placeholder="sk_…" value="${s.ownKey}"></label>
       <p class="hint">${t("st.keyd")}</p>
-      <div class="row"><button class="btn sm" id="save-key" type="button">${t("st.save")}</button><button class="btn sm line" id="rm-key" type="button">${t("st.rm")}</button></div>
+      <div class="row"><button class="btn sm" id="save-key" type="button">${t("st.save")}</button><button class="btn line" id="rm-key" type="button">${t("st.rm")}</button></div>
       <div class="row"><span class="muted">${t("st.theme")}</span>
-        <span class="seg" role="group">${["", "light", "dark"].map((v) => html`<button type="button" data-theme-pick="${v}" class="${s.theme === v ? "on" : ""}">${v || "Auto"}</button>`)}</span></div>
-      <hr style="border:0;border-top:1.5px solid var(--line-soft);width:100%">
+        <span class="seg" role="group">${[["", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(([v, n]) => html`<button type="button" data-theme-pick="${v}" class="${s.theme === v ? "on" : ""}">${n}</button>`)}</span></div>
+      <hr style="border:0;border-top:1px solid var(--rule);width:100%">
       ${!auth.enabled() ? html`<p class="hint">Sign-in isn’t set up on this server.</p>` : signedIn
-        ? html`<p>${t("au.hi")} <b>${auth.user().email}</b></p><button class="btn sm line" id="out" type="button">${t("nav.signout")}</button>`
+        ? html`<p>${t("au.hi")} <b>${auth.user().email}</b></p><button class="btn line" id="out" type="button">${t("nav.signout")}</button>`
         : html`<p class="muted">${t("au.note")}</p>
           <label class="field">${t("au.email")}<input class="input" id="em" type="email" autocomplete="email"></label>
           <label class="field">${t("au.pass")}<input class="input" id="pw" type="password" autocomplete="current-password" minlength="8"></label>
-          <div class="row"><button class="btn sm" id="in" type="button">${t("au.in")}</button><button class="btn sm line" id="up" type="button">${t("au.up")}</button></div>
+          <div class="row"><button class="btn sm" id="in" type="button">${t("au.in")}</button><button class="btn line" id="up" type="button">${t("au.up")}</button></div>
           <p class="hint" id="auth-msg" role="status"></p>`}
     </div>`);
   document.body.append(back);
-  const q = (s) => back.querySelector(s);
+  const q = (sel) => back.querySelector(sel);
   q("#x").addEventListener("click", close);
   api("/api/config").then((c) => { q("#left").textContent = Math.round(c.quota_left * 10) / 10; }).catch(() => {});
   q("#save-key").addEventListener("click", () => { S.set({ ownKey: q("#key").value.trim() }); toast("OK"); });
@@ -99,12 +97,16 @@ function openSettings() {
 }
 
 async function boot() {
-  setLang(S.get().uiLang || initialLang());
   applyTheme();
   try { app.config = await api("/api/config"); if (app.config.supabase) auth.configure(app.config.supabase); }
   catch { app.config = { languages: [], efforts: [], domains: [], models: [], practice: [], limits: {} }; toast(t("err.network")); }
+  let extra = [];
+  try { extra = await (await fetch("/i18n/index.json")).json(); } catch { /* only the built-in three */ }
+  const known = new Set(app.config.languages.map((l) => l.code));
+  app.uiLangs = ["en", "hi", "te", ...extra].filter((c, i, a) => a.indexOf(c) === i && (known.has(c) || ["en", "hi", "te"].includes(c)));
+  const want = S.get().uiLang || initialLang();
+  await loadLang(want); setLang(want);
   window.addEventListener("hashchange", route);
   route();
 }
-export { MITTHU_MARK };
 boot();

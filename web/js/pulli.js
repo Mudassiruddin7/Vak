@@ -1,5 +1,5 @@
-// The hero's dot field: a kolam-style grid of dots, a thread looping around them, and dots that light
-// up into a word in a different Indian script every few seconds.
+// The hero's colour field: three soft blobs drifting slowly, and one big word that fades from script to
+// script. Nothing here moves fast; it is meant to be looked at for a moment and then ignored.
 const WORDS = [["వాక్కు", "Telugu"], ["वाक्", "Hindi"], ["பேச்சு", "Tamil"], ["বাক্", "Bengali"], ["ಮಾತು", "Kannada"], ["Vak", "English"], ["വാക്ക്", "Malayalam"], ["વાણી", "Gujarati"]];
 const FONT = '"Noto Sans Telugu","Noto Sans Devanagari","Noto Sans Tamil","Noto Sans Bengali","Noto Sans Kannada","Noto Sans Malayalam","Noto Sans Gujarati","Instrument Sans",sans-serif';
 
@@ -8,57 +8,31 @@ export async function pulli(box, tag) {
   const ctx = cv.getContext("2d");
   const still = document.documentElement.hasAttribute("data-still") || matchMedia("(prefers-reduced-motion: reduce)").matches;
   const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  let W = 0, H = 0, dpr = 1, pitch = 26, cols = 0, rows = 0, lit = [], target = [], idx = -1, raf = 0, dead = false;
-  const trail = [];
+  let W = 0, H = 0, dpr = 1, idx = 0, started = performance.now(), raf = 0, dead = false;
+  await Promise.all(WORDS.map(([w]) => document.fonts.load(`500 80px ${FONT}`, w).catch(() => {})));
+  const size = () => { dpr = Math.min(2, devicePixelRatio || 1); W = box.clientWidth; H = box.clientHeight; cv.width = W * dpr; cv.height = H * dpr; };
+  const blob = (x, y, r, color, a) => { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, color); g.addColorStop(1, "transparent"); ctx.globalAlpha = a; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); };
 
-  async function sample(i) {
-    const [word] = WORDS[i];
-    await Promise.all(WORDS.map(([w]) => document.fonts.load(`700 80px ${FONT}`, w).catch(() => {})));
-    const off = document.createElement("canvas"); off.width = cols; off.height = rows;
-    const o = off.getContext("2d", { willReadFrequently: true });
-    let size = rows * 0.62; o.font = `700 ${size}px ${FONT}`;
-    const fit = (cols * 0.86) / Math.max(1, o.measureText(word).width); if (fit < 1) { size *= fit; o.font = `700 ${size}px ${FONT}`; }
-    o.textAlign = "center"; o.textBaseline = "middle"; o.fillStyle = "#000"; o.fillText(word, cols / 2, rows / 2 + size * 0.04);
-    const d = o.getImageData(0, 0, cols, rows).data, out = new Float32Array(cols * rows);
-    for (let k = 0; k < out.length; k++) out[k] = d[k * 4 + 3] > 110 ? 1 : 0;
-    return out;
-  }
-
-  function resize() {
-    dpr = Math.min(2, devicePixelRatio || 1); W = box.clientWidth; H = box.clientHeight;
-    cv.width = W * dpr; cv.height = H * dpr;
-    pitch = Math.max(11, Math.round(W / 46)); cols = Math.floor(W / pitch); rows = Math.floor(H / pitch);
-    lit = new Float32Array(cols * rows); target = new Float32Array(cols * rows);
-  }
-
-  async function next() {
-    idx = (idx + 1) % WORDS.length; target = await sample(idx); if (tag) tag.textContent = WORDS[idx][1];
-  }
-
-  function frame(t) {
+  function frame(now) {
     if (dead) return;
+    const t = (now - started) / 1000;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-    const ink = css("--ink"), glow = css("--glow"), thread = css("--fathom");
-    const ox = (W - cols * pitch) / 2 + pitch / 2, oy = (H - rows * pitch) / 2 + pitch / 2;
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-      const k = r * cols + c; lit[k] += (target[k] - lit[k]) * 0.09;
-      const x = ox + c * pitch, y = oy + r * pitch, a = lit[k];
-      ctx.globalAlpha = 0.22 + a * 0.78; ctx.fillStyle = a > 0.5 ? glow : ink;
-      ctx.beginPath(); ctx.arc(x, y, 1.1 + a * (pitch * 0.24), 0, 7); ctx.fill();
-    }
-    // the thread: one point looping around the grid, leaving a fading trail
-    const s = t / 1000, px = W / 2 + Math.sin(s * 0.9) * W * 0.38 + Math.sin(s * 2.3) * W * 0.05, py = H / 2 + Math.sin(s * 1.3 + 1) * H * 0.36 + Math.cos(s * 2.1) * H * 0.04;
-    trail.push([px, py]); if (trail.length > 70) trail.shift();
-    ctx.globalAlpha = 1; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = thread;
-    for (let i = 1; i < trail.length; i++) { ctx.globalAlpha = i / trail.length * 0.9; ctx.lineWidth = 1 + (i / trail.length) * 3.5; ctx.beginPath(); ctx.moveTo(...trail[i - 1]); ctx.lineTo(...trail[i]); ctx.stroke(); }
+    blob(W * (0.3 + 0.08 * Math.sin(t * 0.21)), H * (0.35 + 0.1 * Math.cos(t * 0.17)), W * 0.55, css("--leaf"), 1);
+    blob(W * (0.72 + 0.07 * Math.cos(t * 0.19)), H * (0.4 + 0.1 * Math.sin(t * 0.23)), W * 0.5, css("--sky"), 1);
+    blob(W * (0.5 + 0.09 * Math.sin(t * 0.15 + 2)), H * (0.8 + 0.06 * Math.cos(t * 0.2)), W * 0.5, css("--peach"), 1);
+    // one word at a time: 7 s each, fading in and out
+    const slot = 7, k = (t % slot) / slot, word = WORDS[Math.floor(t / slot) % WORDS.length], fade = Math.min(1, k / 0.18, (1 - k) / 0.18);
+    if (tag && tag.textContent !== word[1]) tag.textContent = word[1];
+    ctx.globalAlpha = Math.max(0, fade) * 0.92; ctx.fillStyle = css("--ink"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    let px = H * 0.34; ctx.font = `500 ${px}px ${FONT}`; const w = ctx.measureText(word[0]).width; if (w > W * 0.76) { px *= (W * 0.76) / w; ctx.font = `500 ${px}px ${FONT}`; }
+    ctx.fillText(word[0], W / 2, H * 0.48 + (1 - fade) * 6);
     ctx.globalAlpha = 1;
-    raf = requestAnimationFrame(frame);
+    if (!still) raf = requestAnimationFrame(frame);
   }
-
-  resize(); await next();
-  if (still) { lit.set(target); frame(0); cancelAnimationFrame(raf); return () => {}; }
+  size(); if (tag) tag.textContent = WORDS[0][1];
+  frame(performance.now());
+  if (still) return () => {};
   raf = requestAnimationFrame(frame);
-  const timer = setInterval(next, 3400);
-  const ro = new ResizeObserver(() => { resize(); next(); }); ro.observe(box);
-  return () => { dead = true; cancelAnimationFrame(raf); clearInterval(timer); ro.disconnect(); };
+  const ro = new ResizeObserver(size); ro.observe(box);
+  return () => { dead = true; cancelAnimationFrame(raf); ro.disconnect(); };
 }

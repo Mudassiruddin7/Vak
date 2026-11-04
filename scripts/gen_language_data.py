@@ -25,7 +25,9 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "crates/vak-core/data/en_sources.json"
 OUT = ROOT / "crates/vak-core/data/generated"
 BCP47 = {"te": "te-IN", "hi": "hi-IN", "ta": "ta-IN", "kn": "kn-IN", "ml": "ml-IN", "mr": "mr-IN",
-         "bn": "bn-IN", "gu": "gu-IN", "pa": "pa-IN", "od": "od-IN"}
+         "bn": "bn-IN", "gu": "gu-IN", "pa": "pa-IN", "od": "od-IN",
+         "as": "as-IN", "brx": "brx-IN", "doi": "doi-IN", "kok": "kok-IN", "ks": "ks-IN", "mai": "mai-IN",
+         "mni": "mni-IN", "ne": "ne-IN", "sa": "sa-IN", "sat": "sat-IN", "sd": "sd-IN", "ur": "ur-IN"}
 BASE = "https://api.sarvam.ai"
 RPM = 45
 
@@ -60,8 +62,12 @@ class Client:
         return j["translated_text"].strip()
 
     async def translit(self, text: str, dst: str) -> str:
-        j = await self._post("/transliterate", {"input": text, "source_language_code": "en-IN", "target_language_code": BCP47[dst]})
-        return j["transliterated_text"].strip()
+        """Empty when the transliterator doesn't cover this language; the English words are banned anyway."""
+        try:
+            j = await self._post("/transliterate", {"input": text, "source_language_code": "en-IN", "target_language_code": BCP47[dst]})
+            return j["transliterated_text"].strip()
+        except Exception:
+            return ""
 
 
 async def lines(c: Client, items: list[str], dst: str) -> list[str]:
@@ -123,7 +129,9 @@ async def build(c: Client, code: str, src: dict) -> dict:
     notices = dict(zip(src["notices"], await lines(c, list(src["notices"].values()), code)))
     jargon = []
     for term in src["jargon"]:
-        jargon.append(await c.translit(term, code))
+        got = await c.translit(term, code)
+        if got:
+            jargon.append(got)
     return {"code": code, "machine_translated": True, "model": "sarvam-translate:v1", "bank": result,
             "variants": variants, "notices": notices, "jargon": jargon, "problems": problems}
 

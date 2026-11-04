@@ -64,7 +64,7 @@ fn lang_json(l: Lang) -> Value {
     json!({
         "code": l.code, "bcp47": l.bcp47, "english": l.english, "native": l.native, "script": l.script, "tier": l.tier,
         "voice": l.tts.is_some(), "explains": t.is_some(), "unreviewed": t.is_some_and(|t| t.machine_translated),
-        "max_words": l.max_words, "sentence_end": l.sentence_end, "you": l.you, "register": l.register, "digits": l.digits,
+        "max_words": l.max_words, "sentence_end": l.sentence_end, "quality": l.quality, "you": l.you, "register": l.register, "digits": l.digits,
         "script_notes": l.script_notes, "loanwords": l.loanwords,
         "notices": t.map(|t| json!(t.notices)),
     })

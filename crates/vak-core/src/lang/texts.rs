@@ -116,6 +116,18 @@ static TEXTS: LazyLock<HashMap<String, LangText>> = LazyLock::new(|| {
         "gu" => "../../data/generated/gu.json",
         "pa" => "../../data/generated/pa.json",
         "od" => "../../data/generated/od.json",
+        "as" => "../../data/generated/as.json",
+        "brx" => "../../data/generated/brx.json",
+        "doi" => "../../data/generated/doi.json",
+        "kok" => "../../data/generated/kok.json",
+        "ks" => "../../data/generated/ks.json",
+        "mai" => "../../data/generated/mai.json",
+        "mni" => "../../data/generated/mni.json",
+        "ne" => "../../data/generated/ne.json",
+        "sa" => "../../data/generated/sa.json",
+        "sat" => "../../data/generated/sat.json",
+        "sd" => "../../data/generated/sd.json",
+        "ur" => "../../data/generated/ur.json",
     ];
     let mut map: HashMap<String, LangText> = sources
         .into_iter()
@@ -157,6 +169,20 @@ mod tests {
             assert!(t.bank.score.contains("{n}") && t.bank.top_word.contains("{w}"), "{}", l.code);
             if l.code != "en" {
                 assert!(t.jargon.len() >= 6, "{}: jargon list too short", l.code);
+            }
+        }
+    }
+
+    #[test]
+    fn every_language_can_explain_and_its_wording_is_whole() {
+        for l in Lang::all() {
+            let t = text_for(&l.code).unwrap_or_else(|| panic!("no wording for {}", l.code));
+            assert!(t.bank.flags.len() >= 10 && t.bank.steps.contains_key("default"), "{}", l.code);
+            assert!(t.bank.total.contains("{n}") && t.bank.top_word.contains("{w}"), "{}: lost a placeholder", l.code);
+            // the wording is in the language's own script, not left in English
+            if l.code != "en" {
+                let share = crate::text::script_share(&t.bank.model, l.script);
+                assert!(share > 0.5, "{}: the model sentence looks untranslated ({share:.2})", l.code);
             }
         }
     }

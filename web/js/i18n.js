@@ -562,14 +562,17 @@ const hi = {
   "foot.local": "आपकी मशीन पर चलता है। आपकी कुंजी सर्वर से बाहर नहीं जाती।",
 };
 
-const TABLES = { en, te, hi };
+export const TABLES = { en, te, hi };
 export const UI_LANGS = ["te", "hi", "en"];
+const RTL = new Set(["ur", "ks"]);
+export const isRtl = (code) => RTL.has(code);
 
 let current = "en";
 
 export function setLang(code) {
   current = TABLES[code] ? code : "en";
   document.documentElement.lang = current;
+  document.documentElement.dir = RTL.has(current) ? "rtl" : "ltr";
   try { localStorage.setItem("vak.lang", current); } catch { /* private mode: fine */ }
   return current;
 }
@@ -581,8 +584,8 @@ export function initialLang() {
     const saved = localStorage.getItem("vak.lang");
     if (saved && TABLES[saved]) return saved;
   } catch { /* ignore */ }
-  const nav = (navigator.language || "en").toLowerCase();
-  return nav.startsWith("te") ? "te" : nav.startsWith("hi") ? "hi" : "en";
+  const nav = (navigator.language || "en").toLowerCase().split("-")[0];
+  return nav === "te" || nav === "hi" ? nav : "en";
 }
 
 export function t(key, vars = {}) {
@@ -594,4 +597,16 @@ export function t(key, vars = {}) {
 export const hasKey = (key) => key in en;
 
 /** Adds or overrides strings, so feature files can bring their own wording. */
-export function extend(code, obj) { Object.assign(TABLES[code], obj); }
+export function extend(code, obj) { TABLES[code] ||= {}; Object.assign(TABLES[code], obj); }
+
+/** Fetches a machine-translated table the first time a language is picked. */
+export async function loadLang(code) {
+  if (TABLES[code]) return true;
+  try {
+    const r = await fetch(`/i18n/${code}.json`); if (!r.ok) return false;
+    const table = await r.json();
+    // machine translation likes to end short labels with a full stop; the English label has none, so neither should this
+    for (const k of Object.keys(table)) if (en[k] && !/[.!?…:]$/.test(en[k])) table[k] = table[k].replace(/[\s.।۔॥。]+$/u, "");
+    extend(code, table); return true;
+  } catch { return false; }
+}

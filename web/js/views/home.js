@@ -1,37 +1,56 @@
 import { html, mount, $, raw } from "../dom.js";
 import { t, getLang } from "../i18n.js";
+import { api } from "../api.js";
 import { audit } from "./audit.js";
-import { pulli } from "../pulli.js";
-
-const PHRASES = ["ఒక కిలో బియ్యం ధర ఎంత?", "दिल्ली से हैदराबाद कितने घंटे?", "இந்தப் படம் எப்படி இருக்கு?", "ಈ ಬಸ್ ಯಾವಾಗ ಬರುತ್ತದೆ?", "What is the price of one kilo of rice?", "এই ওষুধ কখন খাব?"];
+import { highlightChanges } from "../diff.js";
+import { icon, mark } from "../icons.js";
 
 const faq = () => [1, 2, 3, 4].map((n) => html`<details><summary>${t(`faq.${n}.q`)}</summary><p>${t(`faq.${n}.a`)}</p></details>`);
 
+const plain = (s) => s.replace(/[*_#`]+/g, "").replace(/\s+/g, " ").trim();
+
+/** A real result from the recorded shaky audit: what was changed, and what the model did about it. */
+function specimen(report) {
+  const test = report.tests.find((x) => x.status === "broke" && x.output && x.kind === "invariance") || report.tests.find((x) => x.status === "wobble" && x.output);
+  if (!test) return "";
+  const lang = report.prompt_language;
+  return html`<figure class="specimen" style="margin:0">
+    <figcaption class="eyebrow">${t("h.spec")}</figcaption>
+    <p class="q" lang="${lang}">${report.prompt}</p>
+    <div class="pair"><b>${t("h.said")}</b><span lang="${lang}">${plain(report.baseline_output).slice(0, 120)}</span></div>
+    <p class="q" lang="${lang}" style="margin-top:1.1rem">${highlightChanges(report.prompt, test.input)}</p>
+    <div class="pair"><b>${t("h.said")}</b><span lang="${lang}">${plain(test.output).slice(0, 120)}</span></div>
+    <p class="note">${mark("broke", 16)} ${t("h.changed")}</p></figure>`;
+}
+
 export function home(host, app) {
   mount(host, html`
-    <section class="hero2 wrap">
-      <div><span class="eyebrow">${t("h.eyebrow")}</span>
-        <h1 class="h1">${t("h.a")}<br><em>${t("h.b")}</em></h1>
+    <section class="hero3 wrap">
+      <div class="lead">
+        <h1 class="h1">${t("h.a")}<br>${t("h.b")}</h1>
         <p class="lede">${t("h.lede")}</p>
-        <div class="cta-row"><a class="btn" href="#bench" id="cta-audit">${t("h.cta1")}</a><a class="btn line" href="#/translate">${t("nav.translate")}</a><a class="btn line" href="#/setu">${t("h.cta2")}</a></div>
-        <small>${t("h.note")}</small></div>
-      <div class="field" aria-hidden="true"><span class="tag" id="field-tag"></span></div>
+        <div class="acts"><a class="btn" href="#bench" id="cta-audit">${t("h.start")}</a><a class="btn line" href="#/translate">${t("nav.translate")}</a><a class="btn line" href="#/setu">${t("h.cta2")}</a></div>
+        <p class="hint" style="margin-top:1.2rem">${t("h.note")}</p>
+      </div>
+      <div id="spec"></div>
     </section>
-    <section class="sheet paper" id="bench-sheet"><div id="bench" class="bench" style="scroll-margin-top:6rem"></div></section>
-    <section class="sheet ink reveal"><div class="wrap">
-      <p class="eyebrow">${t("how.eyebrow")}</p><h2 class="h2" id="how-title" style="margin-top:.8rem"></h2>
-      <div class="steps">${[1, 2, 3].map((n) => html`<div class="step"><b>${n}</b><h3>${t(`how.${n}.t`)}</h3><p>${t(`how.${n}.d`)}</p></div>`)}</div>
-    </div></section>
-    <section class="sheet paper reveal"><div class="wrap faq" style="max-width:52rem"><h2 class="h2" id="faq-title" style="margin-bottom:2rem"></h2>${faq()}</div></section>
-    <footer class="sheet teal foot"><div class="wrap">
-      <div class="row"><span>Vak · వాక్కు · वाक्</span><span>Built on Sarvam’s speech, translation and language APIs.</span></div>
-      <div class="big" aria-hidden="true">Vak</div></div></footer>`);
-  // headings that carry <em> markup come from trusted translation tables, so they are set as HTML here
+    <section class="sheet" style="padding-top:1.5rem"><div id="bench" class="bench" style="scroll-margin-top:1.5rem"></div></section>
+    <section class="sheet wrap reveal">
+      <h2 class="h2" style="max-width:30rem">${t("idx.title")}</h2>
+      <ol class="index" style="margin-top:1.6rem">
+        ${[["translate", "#/translate"], ["setu", "#/setu"], ["learn", "#/learn"], ["rules", "#/rules"]].map(([id, href], i) => html`<li><b>0${i + 1}</b><h3>${t("nav." + id)}</h3><p>${t(`idx.${id}`)}</p><a class="btn line" href="${href}">${t("idx.open")} ${icon("arrow", 16)}</a></li>`)}
+      </ol>
+    </section>
+    <section class="sheet wrap reveal">
+      <h2 class="h2" id="how-title" style="max-width:34rem"></h2>
+      <div class="steps">${[1, 2, 3].map((n) => html`<div class="step"><b>0${n}</b><h3>${t(`how.${n}.t`)}</h3><p class="muted">${t(`how.${n}.d`)}</p></div>`)}</div>
+    </section>
+    <section class="sheet wrap faq reveal" style="max-width:52rem"><h2 class="h2" id="faq-title" style="margin-bottom:1.6rem"></h2>${faq()}</section>
+    <footer class="foot wrap"><div class="row"><span>vak · వాక్కు · वाक्</span><span>${t("foot.credit")}</span></div></footer>`);
+  // headings that carry <em> come from our own translation tables, so they are set as HTML here
   host.querySelector("#how-title").innerHTML = t("how.title");
   host.querySelector("#faq-title").innerHTML = t("faq.title");
   host.querySelector("#cta-audit").addEventListener("click", (e) => { e.preventDefault(); $("#bench").scrollIntoView({ behavior: "smooth" }); });
-  let stop = () => {};
-  pulli($(".field", host), $("#field-tag", host)).then((f) => { stop = f; });
-  const end = audit($("#bench"), app);
-  return () => { stop(); end?.(); };
+  api("/api/demo/shaky").then((d) => { const s = specimen(d.report); if (s) mount($("#spec", host), s); }).catch(() => {});
+  return audit($("#bench"), app);
 }

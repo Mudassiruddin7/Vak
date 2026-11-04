@@ -41,6 +41,13 @@ pub struct LangInfo {
     pub script_notes: Vec<String>,
     pub loanwords: String,
     pub city: String,
+    /// "handwritten", "machine" or "limited" (Sarvam rates its output for these as weaker).
+    #[serde(default = "machine")]
+    pub quality: String,
+}
+
+fn machine() -> String {
+    "machine".into()
 }
 
 #[derive(Deserialize)]
