@@ -1,1 +1,65 @@
-<!doctype html><meta charset="utf-8"><title>Vak</title><p>Vak is starting up.</p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vak · Is your model steady?</title>
+  <meta name="description" content="Ask in Telugu or Hindi. Vak tests your AI model with small changes and explains the result in plain words.">
+  <meta name="theme-color" content="#fbf9f4">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/Fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/views.css">
+  <link rel="stylesheet" href="css/mascot.css">
+  <link rel="stylesheet" href="css/motion.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><div class="aura"></div><div class="glyph-field"></div></div>
+
+  <header class="topbar" id="topbar">
+    <a class="brand" href="/" aria-label="Vak">
+      <span class="brand-mark-slot"></span>
+      <span class="brand-name">Vak</span>
+      <span class="brand-native" lang="te">వాక్కు</span>
+    </a>
+    <span class="topbar-spacer"></span>
+    <div class="langswitch" role="group" aria-label="Language">
+      <span class="thumb"></span>
+      <button type="button" data-lang="te" lang="te" aria-pressed="false">తె</button>
+      <button type="button" data-lang="hi" lang="hi" aria-pressed="false">हि</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <button type="button" class="pill-btn" id="btn-budget" data-i18n-aria="nav.budget"><span class="coin" id="coin"></span><span id="budget-left">₹…</span></button>
+    <button type="button" class="icon-btn" id="btn-history" data-i18n-aria="nav.history"></button>
+    <button type="button" class="icon-btn" id="btn-theme" data-i18n-aria="nav.theme"></button>
+  </header>
+
+  <main id="app" class="app" data-view="ask">
+    <div class="copy" id="copy">
+      <p class="eyebrow" data-i18n="hero.eyebrow"></p>
+      <h1 data-i18n-html="hero.title"></h1>
+      <p class="lede" data-i18n="hero.lede"></p>
+    </div>
+    <div class="stage" id="stage"></div>
+    <nav class="pipeline" id="pipeline" aria-label="Pipeline"></nav>
+    <div class="panel" id="panel"></div>
+  </main>
+
+  <footer class="foot">
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span lang="te">తెలుగు</span><span lang="hi">हिन्दी</span><span>English</span><span>Saaras listens</span><span>Sarvam 105B thinks</span><span>Mayura translates</span><span>Bulbul speaks</span>
+        <span lang="te">తెలుగు</span><span lang="hi">हिन्दी</span><span>English</span><span>Saaras listens</span><span>Sarvam 105B thinks</span><span>Mayura translates</span><span>Bulbul speaks</span>
+      </div>
+    </div>
+    <div class="inner"><span data-i18n="foot.credit"></span><span data-i18n="foot.local"></span></div>
+  </footer>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <noscript><p style="padding:24px;font-family:sans-serif">Vak needs JavaScript to run.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
