@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// The hand-written (Telugu, Hindi) or machine-translated wording a language uses for audit write-ups.
 #[derive(Clone, Debug, Deserialize)]
@@ -37,7 +37,7 @@ pub struct VariantText {
     pub polite: Vec<PoliteVariant>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Notices {
     pub ai_translation: String,
     pub not_advice: String,
