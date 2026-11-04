@@ -11,8 +11,6 @@ use super::script::{is_format, major_class};
 const DIGIT_ZEROS: [u32; 12] = [
     0x0660, 0x06F0, 0x0966, 0x09E6, 0x0A66, 0x0AE6, 0x0B66, 0x0BE6, 0x0C66, 0x0CE6, 0x0D66, 0xFF10,
 ];
-const TELUGU_ZERO: u32 = 0x0C66;
-const DEVANAGARI_ZERO: u32 = 0x0966;
 
 fn digit_value(c: char) -> Option<u8> {
     if c.is_ascii_digit() {
@@ -30,21 +28,6 @@ pub fn to_ascii_digits(text: &str) -> String {
 /// are used in everyday typing; for other languages the text is returned unchanged.
 pub fn to_native_digits(text: &str, zero: u32) -> String {
     text.chars().map(|c| if c.is_ascii_digit() { char::from_u32(zero + (c as u32 - '0' as u32)).unwrap_or(c) } else { c }).collect()
-}
-
-pub fn native_zero(code: &str) -> Option<u32> {
-    match code {
-        "te" => Some(TELUGU_ZERO),
-        "hi" | "mr" => Some(DEVANAGARI_ZERO),
-        "ta" => Some(0x0BE6),
-        "kn" => Some(0x0CE6),
-        "ml" => Some(0x0D66),
-        "bn" => Some(0x09E6),
-        "gu" => Some(0x0AE6),
-        "pa" => Some(0x0A66),
-        "od" => Some(0x0B66),
-        _ => None,
-    }
 }
 
 pub fn has_ascii_digits(text: &str) -> bool {
@@ -199,7 +182,7 @@ mod tests {
 
     #[test]
     fn digits_round_trip() {
-        assert_eq!(to_native_digits("60 రూపాయలు", TELUGU_ZERO), "౬౦ రూపాయలు");
+        assert_eq!(to_native_digits("60 రూపాయలు", 0x0C66), "౬౦ రూపాయలు");
         assert_eq!(to_ascii_digits("౬౦ ६० ६০"), "60 60 60");
         assert!(has_native_digits("౬౦") && !has_native_digits("60"));
     }
