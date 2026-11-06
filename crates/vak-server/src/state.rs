@@ -31,7 +31,7 @@ impl AppState {
         let sarvam = Sarvam::new(&cfg.sarvam_key, &cfg.sarvam_base, cfg.rpm);
         let supa = Supabase::new(&cfg.supabase_url, &cfg.supabase_key);
         Arc::new(AppState {
-            quota: Quota::new(cfg.anon_units_per_day, cfg.user_units_per_day),
+            quota: Quota::new(cfg.anon_units_per_day, cfg.user_units_per_day, cfg.global_units_per_day, cfg.per_minute),
             audits: Arc::new(Semaphore::new(cfg.max_concurrent_audits.max(1))),
             sessions: Cache::new(2000, Duration::from_secs(60)),
             sarvam,
@@ -137,36 +137,47 @@ struct Bucket {
     recent: Vec<Instant>,
 }
 
-/// Per-visitor limits, in "units" (a light audit is 1, a thorough one 4, a live turn a fraction).
-/// In memory, so on serverless each warm instance counts separately: a soft guard, not an accounting system.
+/// Per-visitor limits, in "units" (a light audit is 1, a thorough one 4, a translation a small fraction), plus one
+/// shared pool for everyone using the server's own key. In memory, so on serverless each warm instance counts
+/// separately: a soft guard that errs on the strict side, not an accounting system.
 pub struct Quota {
     anon: f64,
     user: f64,
+    global_cap: f64,
+    per_min: usize,
     buckets: Mutex<HashMap<String, Bucket>>,
+    global: Mutex<(u64, f64)>,
 }
 
 pub enum Denied {
     Daily,
     Fast,
+    Everyone,
 }
 
 impl Quota {
-    pub fn new(anon: f64, user: f64) -> Self {
-        Quota { anon, user, buckets: Mutex::new(HashMap::new()) }
+    pub fn new(anon: f64, user: f64, global_cap: f64, per_min: usize) -> Self {
+        Quota { anon, user, global_cap, per_min: per_min.max(1), buckets: Mutex::new(HashMap::new()), global: Mutex::new((today(), 0.0)) }
     }
 
     pub fn left(&self, who: &Principal) -> f64 {
         let day = today();
         let cap = self.cap(who);
         let g = self.buckets.lock().expect("quota");
-        g.get(&who.id).filter(|b| b.day == day).map(|b| (cap - b.used).max(0.0)).unwrap_or(cap)
+        let mine = g.get(&who.id).filter(|b| b.day == day).map(|b| (cap - b.used).max(0.0)).unwrap_or(cap);
+        if who.own_key.is_some() {
+            return mine;
+        }
+        let pool = self.global.lock().expect("global");
+        let pool_left = if pool.0 == day { (self.global_cap - pool.1).max(0.0) } else { self.global_cap };
+        mine.min(pool_left)
     }
 
     fn cap(&self, who: &Principal) -> f64 {
         if who.own_key.is_some() { f64::INFINITY } else if who.user.is_some() { self.user } else { self.anon }
     }
 
-    /// Spend `units`, or say why not. At most 30 requests a minute per visitor either way.
+    /// Spend `units`, or say why not. Visitors bringing their own key skip the daily caps but not the minute limit.
     pub fn spend(&self, who: &Principal, units: f64) -> Result<(), Denied> {
         let (day, now) = (today(), Instant::now());
         let cap = self.cap(who);
@@ -179,11 +190,21 @@ impl Quota {
             *b = Bucket { day, used: 0.0, recent: vec![] };
         }
         b.recent.retain(|t| now.duration_since(*t) < Duration::from_secs(60));
-        if b.recent.len() >= 30 {
+        if b.recent.len() >= self.per_min {
             return Err(Denied::Fast);
         }
         if b.used + units > cap + 1e-9 {
             return Err(Denied::Daily);
+        }
+        if who.own_key.is_none() {
+            let mut pool = self.global.lock().expect("global");
+            if pool.0 != day {
+                *pool = (day, 0.0);
+            }
+            if pool.1 + units > self.global_cap + 1e-9 {
+                return Err(Denied::Everyone);
+            }
+            pool.1 += units;
         }
         b.used += units;
         b.recent.push(now);
@@ -198,12 +219,13 @@ fn today() -> u64 {
 pub fn spend_or_429(state: &AppState, who: &Principal, units: f64) -> Result<(), ApiFail> {
     state.quota.spend(who, units).map_err(|d| match d {
         Denied::Fast => fail(429, "That's a lot of requests in a minute. Give it a moment."),
+        Denied::Everyone => fail(429, "Today's free credits for everyone are used up. They come back tomorrow, or add your own Sarvam key in Settings to keep going."),
         Denied::Daily => fail(
             429,
             if who.user.is_some() {
                 "You've used today's free allowance. It resets tomorrow, or add your own Sarvam key in Settings to keep going."
             } else {
-                "You've used today's free allowance. Sign in for more, or add your own Sarvam key in Settings."
+                "You've used today's free allowance. Sign in for a little more, or add your own Sarvam key in Settings."
             },
         ),
     })
@@ -219,7 +241,7 @@ mod tests {
 
     #[test]
     fn daily_cap_and_burst_limit() {
-        let q = Quota::new(3.0, 10.0);
+        let q = Quota::new(3.0, 10.0, 1000.0, 30);
         let a = who("ip:a", false);
         assert!(q.spend(&a, 2.0).is_ok() && q.spend(&a, 1.0).is_ok());
         assert!(matches!(q.spend(&a, 0.5), Err(Denied::Daily)));
@@ -230,6 +252,26 @@ mod tests {
         }
         assert!(matches!(q.spend(&own, 1.0), Err(Denied::Fast)), "but not the per-minute limit");
         assert!((q.left(&a) - 0.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn one_shared_pool_protects_the_credits() {
+        let q = Quota::new(6.0, 20.0, 10.0, 30);
+        assert!(q.spend(&who("ip:a", false), 6.0).is_ok());
+        assert!(q.spend(&who("ip:b", false), 4.0).is_ok());
+        assert!(matches!(q.spend(&who("ip:c", false), 1.0), Err(Denied::Everyone)), "the pool is empty for strangers");
+        assert!(q.spend(&who("ip:d", true), 5.0).is_ok(), "a visitor with their own key is not drawing on it");
+        assert!(q.left(&who("ip:e", false)) < 1e-9);
+    }
+
+    #[test]
+    fn the_minute_limit_is_configurable() {
+        let q = Quota::new(100.0, 100.0, 1000.0, 3);
+        let a = who("ip:a", false);
+        for _ in 0..3 {
+            assert!(q.spend(&a, 0.1).is_ok());
+        }
+        assert!(matches!(q.spend(&a, 0.1), Err(Denied::Fast)));
     }
 
     #[test]

@@ -19,7 +19,7 @@ export function translate(host, app) {
   const langs = app.config.languages;
   const L = (c) => langs.find((l) => l.code === c);
   const saved = S.get().tr || {};
-  const st = { src: saved.src || "auto", dst: saved.dst || (document.documentElement.lang === "hi" ? "en" : "hi"), recents: saved.recents || ["te", "hi", "en"], text: "", out: null, detected: "", roman: false, native: false, gender: "", style: "formal", back: "", busy: false, rec: null };
+  const st = { src: saved.src || "auto", dst: saved.dst || (document.documentElement.lang === "hi" ? "en" : "hi"), recents: saved.recents || ["te", "hi", "en"], text: "", out: null, detected: "", roman: false, native: false, gender: "", alts: false, style: "formal", back: "", busy: false, rec: null };
   let abort = null, audio = null;
   const keep = () => S.set({ tr: { src: st.src, dst: st.dst, recents: st.recents.slice(0, 5) } });
   const bump = (c) => { st.recents = [c, ...st.recents.filter((x) => x !== c)].slice(0, 5); };
@@ -47,6 +47,7 @@ export function translate(host, app) {
             ${st.out?.alternative ? html`<span class="seg" role="group"><button type="button" data-style="formal" class="${st.style === "formal" ? "on" : ""}">${t("tr.formal")}</button><button type="button" data-style="casual" class="${st.style === "casual" ? "on" : ""}">${t("tr.casual")}</button></span>` : ""}
             <select class="input" id="gender" style="width:auto;font-size:.9rem" aria-label="${t("tr.gender")}"><option value="">${t("tr.gender")}: —</option><option value="Female" ${st.gender === "Female" ? "selected" : ""}>${t("tr.gender")}: ♀</option><option value="Male" ${st.gender === "Male" ? "selected" : ""}>${t("tr.gender")}: ♂</option></select>
             <label class="chip" style="cursor:pointer"><input type="checkbox" id="native" ${st.native ? "checked" : ""}> ${t("tr.numerals")}</label>
+            <label class="chip" style="cursor:pointer"><input type="checkbox" id="alts" ${st.alts ? "checked" : ""}> ${t("tr.alts")}</label>
             <span class="grow"></span>
             ${shown && dl?.voice ? html`<button class="btn line" type="button" id="say">${icon("speaker", 16)} ${t("tr.listen")}</button>` : ""}
             ${shown ? html`<button class="btn line" type="button" id="copy">${icon("copy", 16)} ${t("tr.copy")}</button>` : ""}</div>
@@ -59,15 +60,15 @@ export function translate(host, app) {
 
   async function run() {
     const text = st.text.trim();
-    if (!text) { st.out = null; st.detected = ""; st.back = ""; return draw(); }
+    if (text.length < 2) { st.out = null; st.detected = ""; st.back = ""; return draw(); }
     abort?.abort(); abort = new AbortController(); st.busy = true; $(".tr-bar", host)?.classList.add("on");
     try {
-      const r = await api("/api/translate", { method: "POST", signal: abort.signal, body: { text, src: st.src, dst: st.dst, romanized: st.roman, native_numerals: st.native, gender: st.gender || undefined, alternatives: true } });
+      const r = await api("/api/translate", { method: "POST", signal: abort.signal, body: { text, src: st.src, dst: st.dst, romanized: st.roman, native_numerals: st.native, gender: st.gender || undefined, alternatives: st.alts } });
       st.out = r; st.detected = r.detected; st.back = ""; if (!r.alternative) st.style = "formal";
       st.busy = false; const ta = $("#in", host), sel = ta?.selectionStart; draw(); const n = $("#in", host); n.focus(); if (sel != null) n.setSelectionRange(sel, sel);
     } catch (e) { if (e.name === "AbortError") return; st.busy = false; $(".tr-bar", host)?.classList.remove("on"); toast(msg(e)); }
   }
-  const later = debounce(run, 450);
+  const later = debounce(run, 900); // waits for a real pause, so one sentence is one request
 
   function setLang(side, code) { st[side] = code; if (code !== "auto") bump(code); keep(); st.out = null; draw(); run(); }
 
@@ -80,6 +81,7 @@ export function translate(host, app) {
     $$("[data-style]", host).forEach((b) => b.addEventListener("click", () => { st.style = b.dataset.style; draw(); }));
     $("#roman", host).addEventListener("change", (e) => { st.roman = e.target.checked; run(); });
     $("#native", host).addEventListener("change", (e) => { st.native = e.target.checked; run(); });
+    $("#alts", host).addEventListener("change", (e) => { st.alts = e.target.checked; run(); });
     $("#gender", host).addEventListener("change", (e) => { st.gender = e.target.value; run(); });
     $("#copy", host)?.addEventListener("click", async () => { try { await navigator.clipboard.writeText($("#out", host).textContent); toast(t("tr.copied"), 1500); } catch { /* clipboard blocked */ } });
     $("#say", host)?.addEventListener("click", async () => { try { audio?.pause(); audio = new Audio(await speak($("#out", host).textContent, st.dst, (st.gender || "Female").toLowerCase())); await audio.play(); } catch (e) { toast(msg(e)); } });

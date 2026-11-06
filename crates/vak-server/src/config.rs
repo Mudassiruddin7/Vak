@@ -18,6 +18,9 @@ pub struct Config {
     pub signing_key: Vec<u8>,
     pub anon_units_per_day: f64,
     pub user_units_per_day: f64,
+    /// Everyone's free allowance together, per server instance per day. The brake that protects the credits.
+    pub global_units_per_day: f64,
+    pub per_minute: usize,
     pub max_concurrent_audits: usize,
     pub audit_cost_cap_inr: f64,
     pub settings: Settings,
@@ -86,10 +89,12 @@ impl Config {
             allow_private_targets: !hosted && !flag(&["VAK_BLOCK_PRIVATE"]),
             trust_proxy: hosted || flag(&["VAK_TRUST_PROXY"]),
             signing_key,
-            anon_units_per_day: num(&["VAK_ANON_UNITS_PER_DAY"], 24.0),
-            user_units_per_day: num(&["VAK_USER_UNITS_PER_DAY"], 80.0),
+            anon_units_per_day: num(&["VAK_ANON_UNITS_PER_DAY"], 6.0),
+            user_units_per_day: num(&["VAK_USER_UNITS_PER_DAY"], 20.0),
+            global_units_per_day: num(&["VAK_GLOBAL_UNITS_PER_DAY"], 250.0),
+            per_minute: num(&["VAK_PER_MINUTE"], 10.0) as usize,
             max_concurrent_audits: num(&["VAK_MAX_CONCURRENT_AUDITS"], 4.0) as usize,
-            audit_cost_cap_inr: num(&["VAK_AUDIT_COST_CAP_INR"], 15.0),
+            audit_cost_cap_inr: num(&["VAK_AUDIT_COST_CAP_INR"], 3.0),
             settings: Settings { call_timeout: Duration::from_secs(120), run_timeout: Duration::from_secs(280), ..settings },
         }
     }

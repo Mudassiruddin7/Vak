@@ -3,6 +3,7 @@
 import { extend } from "./i18n.js";
 
 const en = {
+  "tr.alts": "Show an everyday wording too",
   "l.q": "Did the answer change?", "l.q.meaning": "The meaning changed. Did the answer?", "l.orig": "Original", "l.yes": "Yes, it changed", "l.no": "No, same answer",
   "l.why.sens.yes": "Good: the meaning changed, so the answer should change too.", "l.why.sens.no": "A flaw: the meaning changed but the answer stayed the same.",
   "l.why.yes": "It changed, though only the wording or form was different. That is a soft spot.", "l.why.no": "Same meaning, same answer. That is what a steady model does.",
@@ -53,6 +54,7 @@ const en = {
   "au.email": "Email", "au.pass": "Password", "au.up": "Create account", "au.in": "Sign in", "au.note": "Signing in lets you save audits and keep your streak.", "au.confirm": "Check your email to confirm, then sign in.", "au.hi": "Signed in as",
 };
 const hi = {
+  "tr.alts": "बोलचाल का रूप भी दिखाइए",
   "l.q": "क्या जवाब बदला?", "l.q.meaning": "मतलब बदल गया। क्या जवाब भी बदला?", "l.orig": "मूल", "l.yes": "हाँ, बदला", "l.no": "नहीं, वही जवाब",
   "l.why.sens.yes": "अच्छा: मतलब बदला, तो जवाब भी बदलना चाहिए।", "l.why.sens.no": "कमी: मतलब बदल गया पर जवाब वही रहा।",
   "l.why.yes": "जवाब बदल गया, जबकि सिर्फ़ शब्द या रूप अलग था। यह कमज़ोर जगह है।", "l.why.no": "वही मतलब, वही जवाब। स्थिर मॉडल ऐसा ही करता है।",
@@ -100,6 +102,7 @@ const hi = {
   "au.email": "ईमेल", "au.pass": "पासवर्ड", "au.up": "खाता बनाइए", "au.in": "साइन इन", "au.note": "साइन इन करने पर आप जाँचें सहेज सकते हैं और अपनी लगातार गिनती बचा सकते हैं।", "au.confirm": "पुष्टि के लिए अपना ईमेल देखिए, फिर साइन इन कीजिए।", "au.hi": "साइन इन:",
 };
 const te = {
+  "tr.alts": "మాటల్లో చెప్పే రూపం కూడా చూపించు",
   "l.q": "జవాబు మారిందా?", "l.q.meaning": "అర్థం మారింది. జవాబు కూడా మారిందా?", "l.orig": "అసలు", "l.yes": "అవును, మారింది", "l.no": "లేదు, అదే జవాబు",
   "l.why.sens.yes": "మంచిది: అర్థం మారింది, కాబట్టి జవాబు కూడా మారాలి.", "l.why.sens.no": "లోపం: అర్థం మారింది కానీ జవాబు అలాగే ఉంది.",
   "l.why.yes": "మాటలు లేదా రూపం మాత్రమే వేరైనా జవాబు మారింది. ఇది బలహీన చోటు.", "l.why.no": "అదే అర్థం, అదే జవాబు. స్థిరమైన మోడల్ ఇలాగే చేస్తుంది.",
